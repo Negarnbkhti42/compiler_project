@@ -8,44 +8,42 @@ LETTER = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
 DIGIT = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 KEYWORD = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return']
 SYMBOL = [';', ':', ',', '[', ']', '{', '}', '(', ')', '+', '-', '*', '=', '<']
-SLASH = '/'
-STAR = '*'
+COMMENT = ['/', '*', '//' , '/*', '*/']
 WHITESPACE = [' ', '\n', '\r', '\v', '\t', '\f']
 
 inputFile = open('input.txt', 'r')
-lines = inputFile.readlines()
 
 lineno = 1
-position = 0
+inputChar = inputFile.read(1)
 
 def get_next_token():
-    global position
     global lineno
+    global inputChar
 
-    if position == len(lines[lineno - 1]):
-        if lineno == len(lines):
-            return None
-        lineno += 1
-        position = 0
-
-    line = lines[lineno - 1]
-    value = line[position]
+    value = inputChar
 
     if value in LETTER:
-        for position in range(position + 1, len(line)):
-            if line[position] in LETTER or line[position] in DIGIT:
-                value += line[position]
-            elif line[position] in SYMBOL or line[position in WHITESPACE]:
+        inputChar = inputFile.read(1)
+        while inputChar != '':
+            if inputChar in LETTER or inputChar in DIGIT:
+                value += inputChar
+            elif inputChar in SYMBOL or inputChar in WHITESPACE:
+                if inputChar == '\n':
+                    lineno+=1
                 return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
-            elif line[position] == SLASH:
-                if line[position + 1] == SLASH or line[position + 1] == STAR:
-                    return (True, '(id, {})'.format(value))
+            elif inputChar == COMMENT[0]:
+                inputChar+=inputChar.read(1)
+                if inputChar in COMMENT:
+                    return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
                 else:
-                    value += line[position]
+                    value+=inputChar[0]
+                    inputChar = inputChar[1]
                     return (False, '({}, Invalid input)'.format(value))
             else:
-                value += line[position]
+                value+=inputChar
                 return (False, '({}, Invalid input)'.format(value))
+            inputChar = inputFile.read(1)
+
 
 while True:
     token = get_next_token()
