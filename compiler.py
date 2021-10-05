@@ -15,24 +15,24 @@ WHITESPACE = [' ', '\n', '\r', '\v', '\t', '\f']
 inputFile = open('input.txt', 'r')
 lines = inputFile.readlines()
 
-lineno = 3
-position = 3
+lineno = 1
+position = 0
 
 def get_next_token():
     global position
     global lineno
 
-    if position >= len(lines[lineno - 1]):
+    if position == len(lines[lineno - 1]):
         if lineno == len(lines):
             return None
-        lineno+=1
+        lineno += 1
         position = 0
 
     line = lines[lineno - 1]
     value = line[position]
 
     if value in LETTER:
-        for position in range(position, len(line)):
+        for position in range(position + 1, len(line)):
             if line[position] in LETTER or line[position] in DIGIT:
                 value += line[position]
             elif line[position] in SYMBOL or line[position in WHITESPACE]:
@@ -47,5 +47,9 @@ def get_next_token():
                 value += line[position]
                 return (False, '({}, Invalid input)'.format(value))
 
-while lineno <= len(lines):
+while True:
     token = get_next_token()
+    if token:
+        print(token)
+    else:
+        break
