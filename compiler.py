@@ -10,15 +10,42 @@ KEYWORD = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return']
 SYMBOL = [';', ':', ',', '[', ']', '{', '}', '(', ')', '+', '-', '*', '=', '<']
 SLASH = '/'
 STAR = '*'
-WHITESPACE = [32, 10, 13, 9, 11, 12]
+WHITESPACE = [' ', '\n', '\r', '\v', '\t', '\f']
 
-input = open('input.txt', 'r')
-lines = input.readlines()
+inputFile = open('input.txt', 'r')
+lines = inputFile.readlines()
 
-lineno = 1
-
-while lines:
-    get_next_token()
+lineno = 3
+position = 3
 
 def get_next_token():
-    text = lines[0]
+    global position
+    global lineno
+
+    if position >= len(lines[lineno - 1]):
+        if lineno == len(lines):
+            return None
+        lineno+=1
+        position = 0
+
+    line = lines[lineno - 1]
+    value = line[position]
+
+    if value in LETTER:
+        for position in range(position, len(line)):
+            if line[position] in LETTER or line[position] in DIGIT:
+                value += line[position]
+            elif line[position] in SYMBOL or line[position in WHITESPACE]:
+                return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
+            elif line[position] == SLASH:
+                if line[position + 1] == SLASH or line[position + 1] == STAR:
+                    return (True, '(id, {})'.format(value))
+                else:
+                    value += line[position]
+                    return (False, '({}, Invalid input)'.format(value))
+            else:
+                value += line[position]
+                return (False, '({}, Invalid input)'.format(value))
+
+while lineno <= len(lines):
+    token = get_next_token()
