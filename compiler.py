@@ -28,8 +28,6 @@ def get_next_token():
             if inputChar in LETTER or inputChar in DIGIT:
                 value += inputChar
             elif inputChar in SYMBOL or inputChar in WHITESPACE:
-                if inputChar == '\n':
-                    lineno+=1
                 return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
             elif inputChar == COMMENT[0]:
                 inputChar+=inputChar.read(1)
@@ -43,6 +41,7 @@ def get_next_token():
                 value+=inputChar
                 return (False, '({}, Invalid input)'.format(value))
             inputChar = inputFile.read(1)
+        return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
 
 
 while True:
