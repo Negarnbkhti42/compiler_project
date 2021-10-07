@@ -14,12 +14,12 @@ WHITESPACE = [' ', '\n', '\r', '\v', '\t', '\f']
 inputFile = open('input.txt', 'r')
 
 lineno = 1
-inputChar = inputFile.read(1)
 
 def get_next_token():
     global lineno
-    global inputChar
+    global inputFile
 
+    inputChar = inputFile.read(1)
     value = inputChar
 
     if value in LETTER:
@@ -28,14 +28,16 @@ def get_next_token():
             if inputChar in LETTER or inputChar in DIGIT:
                 value += inputChar
             elif inputChar in SYMBOL or inputChar in WHITESPACE:
+                inputFile.seek(-1, 1)
                 return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
             elif inputChar == COMMENT[0]:
                 inputChar+=inputChar.read(1)
                 if inputChar in COMMENT:
+                    inputFile.seek(-2, 1)
                     return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
                 else:
                     value+=inputChar[0]
-                    inputChar = inputChar[1]
+                    inputFile.seek(-1, 1)
                     return (False, '({}, Invalid input)'.format(value))
             else:
                 value+=inputChar
