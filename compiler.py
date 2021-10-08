@@ -1,3 +1,6 @@
+
+
+
 # Negar Nobakhti 98171201
 # Neda Taghizadeh Serajeh 98170743
 
@@ -13,11 +16,11 @@ WHITESPACE = [' ', '\n', '\r', '\v', '\t', '\f']
 
 inputFile = open('input.txt', 'r')
 
-lineno = 1
+lineNumber = 1
 inputChar = inputFile.read(1)
 
 def get_next_token():
-    global lineno
+    global lineNumber
     global inputChar
 
     value = inputChar
@@ -25,14 +28,36 @@ def get_next_token():
     if value in LETTER:
         inputChar = inputFile.read(1)
         while inputChar != '':
+
             if inputChar in LETTER or inputChar in DIGIT:
                 value += inputChar
+                # biad adad haro biabe
+                while inputChar in DIGIT:
+                    inputChar += inputChar.read(1)
+                    if inputChar.__contains__(LETTER):
+                        print("error: we don't have digit with letter")
+
             elif inputChar in SYMBOL or inputChar in WHITESPACE:
+
+
                 if inputChar == '\n':
-                    lineno+=1
+                    lineNumber+=1
                 return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
             elif inputChar == COMMENT[0]:
                 inputChar+=inputChar.read(1)
+                # /*21   "*/"  "*/"   43*/
+                #
+                if inputChar == "/*":
+
+                    while inputChar!="*":
+                        value+=inputChar
+                            if inputChar=="*/":
+
+
+                elif inputChar.startswith("//"):
+                        inputChar+=inputChar.read(1)
+
+
                 if inputChar in COMMENT:
                     return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
                 else:
