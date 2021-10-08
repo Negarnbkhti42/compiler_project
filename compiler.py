@@ -21,7 +21,6 @@ def get_next_token():
 
     inputChar = inputFile.read(1)
     value = inputChar
-
     if value in LETTER:
         inputChar = inputFile.read(1)
         while inputChar != '':
@@ -46,7 +45,6 @@ def get_next_token():
         return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
 
 # //////////////////////////////////////////////////////////////////////////////////////////////////
-
     if value in DIGIT:
         inputChar = inputFile.read(1)
         value = inputChar
