@@ -45,6 +45,19 @@ def get_next_token():
             inputChar = inputFile.read(1)
         return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
 
+# //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    if value in DIGIT:
+        inputChar = inputFile.read(1)
+        value = inputChar
+        # biad adad haro biabe
+        while value in DIGIT:
+            value += inputChar.read(1)
+            if value.__contains__(LETTER):
+                return (False, 'invalid number{}'.format(value))
+        return(True,'(DIGIT,{})'.format(value))
+
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 while True:
     token = get_next_token()
