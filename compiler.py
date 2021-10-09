@@ -11,51 +11,49 @@ SYMBOL = [';', ':', ',', '[', ']', '{', '}', '(', ')', '+', '-', '*', '=', '<']
 COMMENT = ['/', '*', '//' , '/*', '*/']
 WHITESPACE = [' ', '\n', '\r', '\v', '\t', '\f']
 
-inputFile = open('input.txt', 'r')
+INPUT_FILE = open('input.txt', 'r')
 
 lineno = 1
 
 def get_next_token():
     global lineno
-    global inputFile
+    global INPUT_FILE
 
-    inputChar = inputFile.read(1)
+    inputChar = INPUT_FILE.read(1)
     value = inputChar
     if value in LETTER:
-        inputChar = inputFile.read(1)
+        inputChar = INPUT_FILE.read(1)
         while inputChar != '':
             if inputChar in LETTER or inputChar in DIGIT:
                 value += inputChar
-            elif inputChar in SYMBOL or inputChar in WHITESPACE:
-                inputFile.seek(-1, 1)
+            elif inputChar in SYMBOL or inputChar in WHITESPACE or inputChar in COMMENT:
+                INPUT_FILE.seek(-1, 1)
                 return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
-            elif inputChar == COMMENT[0]:
-                inputChar+=inputChar.read(1)
-                if inputChar in COMMENT:
-                    inputFile.seek(-2, 1)
-                    return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
-                else:
-                    value+=inputChar[0]
-                    inputFile.seek(-1, 1)
-                    return (False, '({}, Invalid input)'.format(value))
             else:
                 value+=inputChar
                 return (False, '({}, Invalid input)'.format(value))
-            inputChar = inputFile.read(1)
+            inputChar = INPUT_FILE.read(1)
         return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
 
 # //////////////////////////////////////////////////////////////////////////////////////////////////
     if value in DIGIT:
-        inputChar = inputFile.read(1)
-        value = inputChar
+        inputChar = INPUT_FILE.read(1)
+
         # biad adad haro biabe
-        while value in DIGIT:
-            value += inputChar.read(1)
-            if value.__contains__(LETTER):
-                return (False, 'invalid number{}'.format(value))
-        return(True,'(DIGIT,{})'.format(value))
+        while inputChar != '':
+            if inputChar in DIGIT:
+                value += inputChar
+            elif inputChar in LETTER:
+                value += inputChar
+                return (False, '{}, invalid number'.format(value))
+            else:
+                INPUT_FILE.seek(-1, 1)
+                return (True, '(NUM, {})'.format(value))
+            inputChar = INPUT_FILE.read(1)
+        return (True, '(NUM, {})'.format(value))
 
 # //////////////////////////////////////////////////////////////////////////////////////////////////
+    return (False, f"({value}, invalid input")
 
 while True:
     token = get_next_token()
