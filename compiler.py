@@ -11,49 +11,86 @@ SYMBOL = [';', ':', ',', '[', ']', '{', '}', '(', ')', '+', '-', '*', '=', '<']
 COMMENT = ['/', '*', '//' , '/*', '*/']
 WHITESPACE = [' ', '\n', '\r', '\v', '\t', '\f']
 
-INPUT_FILE = open('input.txt', 'r')
+inputFile = open('input.txt', 'r')
 
 lineno = 1
 
 def get_next_token():
     global lineno
-    global INPUT_FILE
+    global inputFile
 
-    inputChar = INPUT_FILE.read(1)
+    inputChar = inputFile.read(1)
     value = inputChar
     if value in LETTER:
-        inputChar = INPUT_FILE.read(1)
+        inputChar = inputFile.read(1)
         while inputChar != '':
             if inputChar in LETTER or inputChar in DIGIT:
                 value += inputChar
-            elif inputChar in SYMBOL or inputChar in WHITESPACE or inputChar in COMMENT:
-                INPUT_FILE.seek(-1, 1)
+            elif inputChar in SYMBOL or inputChar in WHITESPACE:
+                inputFile.seek(-1, 1)
                 return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
+            elif inputChar == COMMENT[0]:
+                inputChar+=inputChar.read(1)
+                if inputChar in COMMENT:
+                    inputFile.seek(-2, 1)
+                    return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
+                else:
+                    value+=inputChar[0]
+                    inputFile.seek(-1, 1)
+                    return (False, '({}, Invalid input)'.format(value))
             else:
                 value+=inputChar
                 return (False, '({}, Invalid input)'.format(value))
-            inputChar = INPUT_FILE.read(1)
+            inputChar = inputFile.read(1)
         return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
 
 # //////////////////////////////////////////////////////////////////////////////////////////////////
-    if value in DIGIT:
-        inputChar = INPUT_FILE.read(1)
 
+    if value in DIGIT:
         # biad adad haro biabe
-        while inputChar != '':
-            if inputChar in DIGIT:
-                value += inputChar
-            elif inputChar in LETTER:
-                value += inputChar
-                return (False, '{}, invalid number'.format(value))
-            else:
-                INPUT_FILE.seek(-1, 1)
-                return (True, '(NUM, {})'.format(value))
-            inputChar = INPUT_FILE.read(1)
-        return (True, '(NUM, {})'.format(value))
+        while inputChar in DIGIT:
+            inputChar = inputFile.read(1)
+            value += inputChar.read(1)
+            if value.__contains__(LETTER):
+                return (False, 'invalid number{}'.format(value))
+        return(True,'(DIGIT,{})'.format(value))
 
 # //////////////////////////////////////////////////////////////////////////////////////////////////
-    return (False, f"({value}, invalid input")
+
+    if value == COMMENT[0]:
+        value += inputChar.read(1)
+
+        if value.startswith("//"):
+            inputChar=inputFile.read(1)
+            while inputChar != "\n":
+                inputChar = inputChar.read(1)
+
+        if value.startswith("/*"):
+            inputChar = inputFile.read(1)
+            if inputChar=="*":
+                value=inputChar
+                value+=inputChar
+                if value=="*/":
+                    return (True, '(COMMENT,{})'.format(value))
+                else:
+                    return (False, 'unclosed comment{}'.format(value))
+
+
+# //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    if value in SYMBOL:
+        if value=="=":
+            inputChar = inputFile.read(1)
+            if inputChar=="=":
+                value+=inputChar
+                return (True, '(SYMBOL,{})'.format(value))  #==
+            else:
+                return (True, '(SYMBOL,{})'.format(value)) #=
+        else:
+            (True, '(SYMBOL,{})'.format(value)) # harchizi joz   ==  va  =
+
+
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 while True:
     token = get_next_token()
