@@ -13,11 +13,93 @@ WHITESPACE = [' ', '\n', '\r', '\v', '\t', '\f']
 
 inputFile = open('input.txt', 'r')
 
-lineNum = 1
+line_num = 1
+
+def get_id(value):
+    input_char = inputFile.read(1)
+    while input_char != '':
+        if input_char in LETTER or input_char in DIGIT:
+            value += input_char
+        elif input_char in SYMBOL or input_char in WHITESPACE:
+            inputFile.seek(-1, 1)
+            return True, 'KEYWORD' if value in KEYWORD else 'ID', value
+        elif input_char == COMMENT[0]:
+            input_char+=input_char.read(1)
+            if input_char in COMMENT:
+                inputFile.seek(-2, 1)
+                return True, 'KEYWORD' if value in KEYWORD else 'ID', value
+            else:
+                value+=input_char[0]
+                inputFile.seek(-1, 1)
+                return False, 'Invalid input', value
+        else:
+            value+=input_char
+            return False, 'Invalid input', value
+        input_char = inputFile.read(1)
+    return True, 'KEYWORD' if value in KEYWORD else 'ID', value
+
+
+def get_num(value):
+    input_char = inputFile.read(1)
+    while input_char in DIGIT:
+        value += input_char
+        input_char = inputFile.read(1)
+    if input_char in LETTER:
+        value += input_char
+        return False, 'Invalind number', value
+    else:
+        if input_char != '':
+            inputFile.seek(-1, 1)
+        return True, 'NUM', value
+
+
+def getComment(value):
+    global line_num
+
+    input_char = value + inputFile.read(1)
+
+    if input_char == COMMENT[2]:
+        value = input_char
+        input_char=inputFile.read(1)
+        while input_char != "\n" or input_char != '':
+            value += input_char
+            input_char = inputFile.read(1)
+        if input_char == '\n':
+            inputFile.seek(-1, 1)
+        return True, 'COMMENT', value
+
+    if input_char == COMMENT[3]:
+        value = input_char
+        input_char = inputFile.read(1)
+        start_line = line_num
+
+        while input_char != '':
+            if input_char == COMMENT[1]:
+                input_char += inputFile.read(1)
+                if input_char == COMMENT[4]:
+                    return True, 'COMMENT', value, start_line
+            if input_char == '\n':
+                line_num += 1
+            value += input_char
+            input_char = inputFile.read(1)
+        return False, 'Unclosed comment', value, start_line
+
+
+def get_symbol(value):
+    if value=="=":
+        input_char = inputFile.read(1)
+        if input_char=="=":
+            value+=input_char
+            return True, 'SYMBOL', value # ==
+        else:
+            inputFile.seek(-1, 1)
+            return True, 'SYMBOL', value # =
+    else:
+        return True, 'SYMBOL', value # harchizi joz   ==  va  =
+
 
 def get_next_token():
-    global lineNum
-    global inputFile
+    global line_num
 
     input_char = inputFile.read(1)
     value = input_char
@@ -25,7 +107,7 @@ def get_next_token():
     while value in WHITESPACE:
         value = inputFile.read(1)
         if value == '\n':
-            lineNum += 1
+            line_num += 1
 
     if value == '':
         return None
@@ -33,78 +115,24 @@ def get_next_token():
 
 # ID/KEYWORD////////////////////////////////////////////////////////////////////////////////////////
     if value in LETTER:
-        input_char = inputFile.read(1)
-        while input_char != '':
-            if input_char in LETTER or input_char in DIGIT:
-                value += input_char
-            elif input_char in SYMBOL or input_char in WHITESPACE:
-                inputFile.seek(-1, 1)
-                return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
-            elif input_char == COMMENT[0]:
-                input_char+=input_char.read(1)
-                if input_char in COMMENT:
-                    inputFile.seek(-2, 1)
-                    return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
-                else:
-                    value+=input_char[0]
-                    inputFile.seek(-1, 1)
-                    return (False, '({}, Invalid input)'.format(value))
-            else:
-                value+=input_char
-                return (False, '({}, Invalid input)'.format(value))
-            input_char = inputFile.read(1)
-        return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
+        return get_id(value)
 
 # NUM///////////////////////////////////////////////////////////////////////////////////////////////
 
     if value in DIGIT:
         # biad adad haro biabe
-        input_char = inputFile.read(1)
-        while input_char in DIGIT:
-            value += input_char
-            input_char = inputFile.read(1)
-        if input_char in LETTER:
-            value += input_char
-            return (False, 'invalid number{}'.format(value))
-        else:
-            if input_char != '':
-                inputFile.seek(-1, 1)
-            return (True,'(DIGIT,{})'.format(value))
+        return get_num(value)
 
 # COMMENT///////////////////////////////////////////////////////////////////////////////////////////
 
     if value == COMMENT[0]:
-        input_char += inputFile.read(1)
+        return getComment(value)
 
-        if input_char == COMMENT[2]:
-            value = input_char
-            input_char=inputFile.read(1)
-            while input_char != "\n" or input_char != '':
-                value += input_char
-                input_char = inputFile.read(1)
-            if input_char == '\n':
-                inputFile.seek(-1, 1)
-            return (True, '(Comment, {}'.format(value))
-
-        if input_char == COMMENT[3]:
-            value = input_char
-            input_char = inputFile.read(1)
-     
-            while input_char != '':
-                if input_char == COMMENT[1]:
-                    input_char += inputFile.read(1)
-                    if input_char == COMMENT[4]:
-                        return (True, '(COMMENT,{})'.format(value))
-                value += input_char
-                input_char = inputFile.read(1)
-
-            return (False, 'unclosed comment{}'.format(value))
-        
     if value == COMMENT[1]:
         input_char += inputFile.read(1)
         if input_char == COMMENT[4]:
             value = input_char
-            return (False, 'unmatched comment, {}'.format(value))
+            return False, 'Unmatched comment', value
         else:
             inputFile.seek(-1, 1)
 
@@ -112,16 +140,7 @@ def get_next_token():
 # SYMBOL////////////////////////////////////////////////////////////////////////////////////////////
 
     if value in SYMBOL:
-        if value=="=":
-            input_char = inputFile.read(1)
-            if input_char=="=":
-                value+=input_char
-                return (True, '(SYMBOL,{})'.format(value))  #==
-            else:
-                inputFile.seek(-1, 1)
-                return (True, '(SYMBOL,{})'.format(value)) #=
-        else:
-            return (True, '(SYMBOL,{})'.format(value)) # harchizi joz   ==  va  =
+        return get_symbol(value)
 
 
 
