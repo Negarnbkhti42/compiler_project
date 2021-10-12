@@ -53,7 +53,7 @@ def get_num(value):
         return True, 'NUM', value
 
 
-def getComment(value):
+def get_comment(value):
     global line_num
 
     input_char = value + inputFile.read(1)
@@ -126,7 +126,7 @@ def get_next_token():
 # COMMENT///////////////////////////////////////////////////////////////////////////////////////////
 
     if value == COMMENT[0]:
-        return getComment(value)
+        return get_comment(value)
 
     if value == COMMENT[1]:
         input_char += inputFile.read(1)
