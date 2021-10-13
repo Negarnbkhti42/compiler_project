@@ -14,6 +14,7 @@ WHITESPACE = [' ', '\n', '\r', '\v', '\t', '\f']
 inputFile = open('input.txt', 'r')
 
 lineno = 1
+starBackslash= ""
 
 def get_next_token():
     global lineno
@@ -50,7 +51,7 @@ def get_next_token():
         # biad adad haro biabe
         while inputChar in DIGIT:
             inputChar = inputFile.read(1)
-            value += inputChar.read(1)
+            value += inputFile.read(1)
             if value.__contains__(LETTER):
                 return (False, 'invalid number{}'.format(value))
         return(True,'(DIGIT,{})'.format(value))
@@ -63,14 +64,15 @@ def get_next_token():
         if value.startswith("//"):
             inputChar=inputFile.read(1)
             while inputChar != "\n":
-                inputChar = inputChar.read(1)
+                inputChar = inputFile.read(1)
+                value += inputChar.read(1)
 
         if value.startswith("/*"):
             inputChar = inputFile.read(1)
             if inputChar=="*":
-                value=inputChar
-                value+=inputChar
-                if value=="*/":
+                starBackslash=inputChar
+                starBackslash+=inputChar
+                if starBackslash=="*/":
                     return (True, '(COMMENT,{})'.format(value))
                 else:
                     return (False, 'unclosed comment{}'.format(value))
@@ -85,6 +87,7 @@ def get_next_token():
                 value+=inputChar
                 return (True, '(SYMBOL,{})'.format(value))  #==
             else:
+                inputFile.seek(-1, 1)
                 return (True, '(SYMBOL,{})'.format(value)) #=
         else:
             (True, '(SYMBOL,{})'.format(value)) # harchizi joz   ==  va  =
