@@ -168,7 +168,7 @@ while True:
     if token:
         if token[0]:
             line = token[3] if token[1] == 'COMMENT' else line_num
-            if line_num in TOKENS.keys():
+            if line in TOKENS.keys():
                 TOKENS[line].append(f"({token[1]}, {token[2]})")
             else:
                 TOKENS[line] = [f"({token[1]}, {token[2]})"]
