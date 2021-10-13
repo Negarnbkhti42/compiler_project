@@ -15,6 +15,7 @@ inputFile = open('input.txt', 'r')
 
 lineno = 1
 starBackslash= ""
+comments=""
 
 def get_next_token():
     global lineno
@@ -50,11 +51,13 @@ def get_next_token():
     if value in DIGIT:
         # biad adad haro biabe
         while inputChar in DIGIT:
+            value += inputChar
             inputChar = inputFile.read(1)
-            value += inputFile.read(1)
-            if value.__contains__(LETTER):
-                return (False, 'invalid number{}'.format(value))
-        return(True,'(DIGIT,{})'.format(value))
+        if inputChar in LETTER:
+            return (False, 'invalid number{}'.format(value))
+        else:
+            inputFile.seek(-1, 1)
+            return(True,'(DIGIT,{})'.format(value))
 
 # //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -69,6 +72,7 @@ def get_next_token():
 
         if value.startswith("/*"):
             inputChar = inputFile.read(1)
+
             if inputChar=="*":
                 starBackslash=inputChar
                 starBackslash+=inputChar
@@ -76,6 +80,10 @@ def get_next_token():
                     return (True, '(COMMENT,{})'.format(value))
                 else:
                     return (False, 'unclosed comment{}'.format(value))
+
+            else:
+                value+=inputFile.read(1)
+
 
 
 # //////////////////////////////////////////////////////////////////////////////////////////////////
