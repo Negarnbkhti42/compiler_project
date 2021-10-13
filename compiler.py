@@ -16,36 +16,30 @@ inputFile = open('input.txt', 'r')
 lineno = 1
 starBackslash= ""
 
+SYMBOL_TABLE = set()
+TOKENS = {}
+ERRORS = {}
+
 def get_next_token():
-    global lineno
-    global inputFile
+    global line_num
 
-    inputChar = inputFile.read(1)
-    value = inputChar
+    input_char = inputFile.read(1)
+    value = input_char
+
+    while value in WHITESPACE:
+        value = inputFile.read(1)
+        if value == '\n':
+            line_num += 1
+
+    if value == '':
+        return None
+
+
+# ID/KEYWORD////////////////////////////////////////////////////////////////////////////////////////
     if value in LETTER:
-        inputChar = inputFile.read(1)
-        while inputChar != '':
-            if inputChar in LETTER or inputChar in DIGIT:
-                value += inputChar
-            elif inputChar in SYMBOL or inputChar in WHITESPACE:
-                inputFile.seek(-1, 1)
-                return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
-            elif inputChar == COMMENT[0]:
-                inputChar+=inputChar.read(1)
-                if inputChar in COMMENT:
-                    inputFile.seek(-2, 1)
-                    return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
-                else:
-                    value+=inputChar[0]
-                    inputFile.seek(-1, 1)
-                    return (False, '({}, Invalid input)'.format(value))
-            else:
-                value+=inputChar
-                return (False, '({}, Invalid input)'.format(value))
-            inputChar = inputFile.read(1)
-        return (True, '({}, {})'.format('KEYWORD' if value in KEYWORD else 'ID', value))
+        return get_id(value)
 
-# //////////////////////////////////////////////////////////////////////////////////////////////////
+# NUM///////////////////////////////////////////////////////////////////////////////////////////////
 
     if value in DIGIT:
         # biad adad haro biabe
@@ -56,10 +50,9 @@ def get_next_token():
                 return (False, 'invalid number{}'.format(value))
         return(True,'(DIGIT,{})'.format(value))
 
-# //////////////////////////////////////////////////////////////////////////////////////////////////
+# COMMENT///////////////////////////////////////////////////////////////////////////////////////////
 
     if value == COMMENT[0]:
-        value += inputChar.read(1)
 
         if value.startswith("//"):
             inputChar=inputFile.read(1)
@@ -78,7 +71,7 @@ def get_next_token():
                     return (False, 'unclosed comment{}'.format(value))
 
 
-# //////////////////////////////////////////////////////////////////////////////////////////////////
+# SYMBOL////////////////////////////////////////////////////////////////////////////////////////////
 
     if value in SYMBOL:
         if value=="=":
@@ -93,11 +86,19 @@ def get_next_token():
             (True, '(SYMBOL,{})'.format(value)) # harchizi joz   ==  va  =
 
 
-# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 while True:
     token = get_next_token()
     if token:
-        print(token)
+        if token[0]:
+            if lineno in TOKENS.keys():
+                TOKENS[token[3] if token[1] == 'COMMENT' else lineno].append(f"({token[1]}, {token[2]})")
+            else:
+                TOKENS[token[3] if token[1] == 'COMMENT' else lineno] = [f"({token[1]}, {token[2]})"]
+                
+            if token[1] == 'ID':
+                SYMBOL_TABLE.add(token[2])
     else:
         break
+
+inputFile.close()
