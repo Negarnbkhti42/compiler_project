@@ -15,6 +15,10 @@ inputFile = open('input.txt', 'r')
 
 line_num = 1
 
+SYMBOL_TABLE = set()
+TOKENS = {}
+ERRORS = {}
+
 def get_id(value):
     input_char = inputFile.read(1)
     while input_char != '':
@@ -66,7 +70,7 @@ def get_comment(value):
             input_char = inputFile.read(1)
         if input_char == '\n':
             inputFile.seek(-1, 1)
-        return True, 'COMMENT', value
+        return True, 'COMMENT', value, line_num
 
     if input_char == COMMENT[3]:
         value = input_char
@@ -147,7 +151,14 @@ def get_next_token():
 while True:
     token = get_next_token()
     if token:
-        print(token)
+        if token[0]:
+            if line_num in TOKENS.keys():
+                TOKENS[token[3] if token[1] == 'COMMENT' else line_num].append(f"({token[1]}, {token[2]})")
+            else:
+                TOKENS[token[3] if token[1] == 'COMMENT' else line_num] = [f"({token[1]}, {token[2]})"]
+                
+            if token[1] == 'ID':
+                SYMBOL_TABLE.add(token[2])
     else:
         break
 
