@@ -117,9 +117,11 @@ def get_symbol(value):
         if input_char=="=":
             value+=input_char
             return (True, 'SYMBOL', value)  #==
-        else:
+        if input_char in LETTER or input_char in DIGIT or input_char in WHITESPACE or input_char in COMMENT:
             inputFile.seek(inputFile.tell() -1)
             return (True, 'SYMBOL', value) #=
+        value += input_char
+        return (False, 'Invalid input', value)
     elif value == '*':
         input_char = inputFile.read(1)
 
