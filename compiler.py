@@ -27,17 +27,17 @@ def get_id(value):
         if inputChar in LETTER or inputChar in DIGIT:
             value += inputChar
         elif inputChar in SYMBOL or inputChar in WHITESPACE:
-            inputFile.seek(-1, 1)
+            inputFile.seek(inputFile.tell()-1)
             return (True, 'KEYWORD' if value in KEYWORD else 'ID', value)
         elif inputChar == COMMENT[0]:
             inputChar+=inputChar.read(1)
 
             if inputChar in COMMENT:
-                inputFile.seek(-2, 1)
+                inputFile.seek(inputFile.tell() -2)
                 return (True, 'KEYWORD' if value in KEYWORD else 'ID', value)
             else:
                 value+=inputChar[0]
-                inputFile.seek(-1, 1)
+                inputFile.seek(inputFile.tell() -1)
                 return (False, 'Invalid input', value)
         else:
             value+=inputChar
@@ -55,10 +55,11 @@ def get_num(value):
         inputChar = inputFile.read(1)
 
     if inputChar in LETTER:
+        value += inputChar
         return (False, 'Invalid number', value)
 
     if inputChar != '':
-        inputFile.seek(-1, 1)
+        inputFile.seek(inputFile.tell() -1)
     return(True,'NUM', value)
 
 
@@ -70,12 +71,12 @@ def get_comment(value):
     if value == '//':
         inputChar=inputFile.read(1)
 
-        while inputChar != '\n' or inputChar != '':
+        while inputChar != '\n' and inputChar != '':
             value += inputChar
             inputChar = inputFile.read(1)
 
         if inputChar != '':
-            inputFile.seek(-1, 1)
+            inputFile.seek(inputFile.tell() -1)
         return (True, 'COMMENT', value, line_num)
     elif value == '/*':
         start_line = line_num
@@ -93,12 +94,12 @@ def get_comment(value):
                     value += inputChar
                     return (True, 'COMMENT', value, start_line)
                 else:
-                    inputFile.seek(-1, 1)
+                    inputFile.seek(inputFile.tell() -1)
 
             inputChar = inputFile.read(1)
         return (False, 'Unclosed comment', value, start_line)
     else:
-        inputFile.seek(-1, 1)
+        inputFile.seek(inputFile.tell() -1)
         return (False, 'Invalid input', value, start_line)
 
 
@@ -110,7 +111,7 @@ def get_symbol(value):
             value+=inputChar
             return (True, 'SYMBOL', value)  #==
         else:
-            inputFile.seek(-1, 1)
+            inputFile.seek(inputFile.tell() -1)
             return (True, 'SYMBOL', value) #=
     elif value == '*':
         inputChar = inputFile.read(1)
@@ -119,7 +120,7 @@ def get_symbol(value):
             value += inputChar
             return (False, 'Unmatched comment', value)
         else:
-            inputFile.seek(-1, 1)
+            inputFile.seek(inputFile.tell() -1)
             return (True, 'SYMBOL', value)
     else:
         return (True, 'SYMBOL', value) # harchizi joz   ==  va  =
@@ -161,13 +162,15 @@ def get_next_token():
     if value in SYMBOL:
         return get_symbol(value)
 
+    return (False, 'Invalid input', value)
+
 
 
 while True:
     token = get_next_token()
     if token:
         if token[0]:
-            line = token[3] if token[1] == 'COMMENT' else line_num
+            line = str(token[3] if token[1] == 'COMMENT' else line_num)
             if line in TOKENS.keys():
                 TOKENS[line].append(f"({token[1]}, {token[2]})")
             else:
