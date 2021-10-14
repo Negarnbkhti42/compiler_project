@@ -20,104 +20,111 @@ TOKENS = {}
 ERRORS = {}
 
 
-def get_id(value):
-    inputChar = inputFile.read(1)
-    while inputChar != '':
+def skip_whitespace_and_comment():
+    global line_num
 
-        if inputChar in LETTER or inputChar in DIGIT:
-            value += inputChar
-        elif inputChar in SYMBOL or inputChar in WHITESPACE:
+    while True:
+        value = inputFile.read(1)
+
+        if value in WHITESPACE:
+            if value == '\n':
+                line_num += 1
+
+
+        elif value == COMMENT[0]:
+            value += inputFile.read(1)
+
+            if value == '//':
+                value = inputFile.read(1)
+
+                while value != '\n' and value != '':
+                    value = inputFile.read(1)
+
+                if value == '\n':
+                    line_num += 1
+                else:
+                    return value
+            elif value == '/*':
+                start_line = line_num
+                input_char = inputFile.read(1)
+
+                while input_char != '':
+                    value += input_char
+                    if input_char == '\n':
+                        line_num += 1
+                    elif input_char == '*':
+                        input_char = inputFile.read(1)
+
+                        if input_char == "/":
+                            break
+
+                    input_char = inputFile.read(1)
+                if value == '':
+                    return (False, 'Unclosed comment', value, start_line)
+            else:
+                inputFile.seek(inputFile.tell() -1)
+                return (False, 'Invalid input', value[0])
+        else:
+            return value
+
+def get_id(value):
+    input_char = inputFile.read(1)
+    while input_char != '':
+
+        if input_char in LETTER or input_char in DIGIT:
+            value += input_char
+        elif input_char in SYMBOL or input_char in WHITESPACE:
             inputFile.seek(inputFile.tell()-1)
             return (True, 'KEYWORD' if value in KEYWORD else 'ID', value)
-        elif inputChar == COMMENT[0]:
-            inputChar+=inputChar.read(1)
+        elif input_char == COMMENT[0]:
+            input_char+=input_char.read(1)
 
-            if inputChar in COMMENT:
+            if input_char in COMMENT:
                 inputFile.seek(inputFile.tell() -2)
                 return (True, 'KEYWORD' if value in KEYWORD else 'ID', value)
             else:
-                value+=inputChar[0]
+                value+=input_char[0]
                 inputFile.seek(inputFile.tell() -1)
                 return (False, 'Invalid input', value)
         else:
-            value+=inputChar
+            value+=input_char
             return (False, 'Invalid input', value)
-        inputChar = inputFile.read(1)
+        input_char = inputFile.read(1)
     return (True, 'KEYWORD' if value in KEYWORD else 'ID', value)
 
 
 def get_num(value):
-    inputChar = inputFile.read(1)
+    input_char = inputFile.read(1)
     # biad adad haro biabe
 
-    while inputChar in DIGIT:
-        value += inputChar
-        inputChar = inputFile.read(1)
+    while input_char in DIGIT:
+        value += input_char
+        input_char = inputFile.read(1)
 
-    if inputChar in LETTER:
-        value += inputChar
+    if input_char in LETTER:
+        value += input_char
         return (False, 'Invalid number', value)
 
-    if inputChar != '':
+    if input_char != '':
         inputFile.seek(inputFile.tell() -1)
     return(True,'NUM', value)
 
 
-def get_comment(value):
-    global line_num
-
-    value += inputFile.read(1)
-
-    if value == '//':
-        inputChar=inputFile.read(1)
-
-        while inputChar != '\n' and inputChar != '':
-            value += inputChar
-            inputChar = inputFile.read(1)
-
-        if inputChar != '':
-            inputFile.seek(inputFile.tell() -1)
-        return (True, 'COMMENT', value, line_num)
-    elif value == '/*':
-        start_line = line_num
-        inputChar = inputFile.read(1)
-
-        while inputChar != "":
-            value += inputChar
-
-            if inputChar == '\n':
-                line_num += 1
-            elif inputChar=="*":
-                inputChar = inputFile.read(1)
-
-                if inputChar == "/":
-                    value += inputChar
-                    return (True, 'COMMENT', value, start_line)
-                else:
-                    inputFile.seek(inputFile.tell() -1)
-
-            inputChar = inputFile.read(1)
-        return (False, 'Unclosed comment', value, start_line)
-    else:
-        inputFile.seek(inputFile.tell() -1)
-        return (False, 'Invalid input', value, start_line)
-
-
 def get_symbol(value):
     if value=="=":
-        inputChar = inputFile.read(1)
+        input_char = inputFile.read(1)
 
-        if inputChar=="=":
-            value+=inputChar
+        if input_char=="=":
+            value+=input_char
             return (True, 'SYMBOL', value)  #==
         else:
             inputFile.seek(inputFile.tell() -1)
             return (True, 'SYMBOL', value) #=
     elif value == '*':
-        inputChar = inputFile.read(1)
+        input_char = inputFile.read(1)
 
-        if inputChar == '/':
-            value += inputChar
+        if input_char == '/':
+            value += input_char
             return (False, 'Unmatched comment', value)
         else:
             inputFile.seek(inputFile.tell() -1)
@@ -129,13 +136,10 @@ def get_symbol(value):
 def get_next_token():
     global line_num
 
-    input_char = inputFile.read(1)
-    value = input_char
+    value = skip_whitespace_and_comment()
 
-    while value in WHITESPACE:
-        if value == '\n':
-            line_num += 1
-        value = inputFile.read(1)
+    if value is tuple:
+        return value
 
     if value == '':
         return None
@@ -150,13 +154,6 @@ def get_next_token():
     if value in DIGIT:
         return get_num(value)
 
-# COMMENT//////////////////////
-
-    if value == COMMENT[0]:
-        return get_comment(value)
-
-
-
 # SYMBOL//////////////////////
 
     if value in SYMBOL:
@@ -170,15 +167,20 @@ while True:
     token = get_next_token()
     if token:
         if token[0]:
-            line = str(token[3] if token[1] == 'COMMENT' else line_num)
-            if line in TOKENS.keys():
-                TOKENS[line].append(f"({token[1]}, {token[2]})")
-            else:
-                TOKENS[line] = [f"({token[1]}, {token[2]})"]
 
-            if token[1] == 'ID':
+            if line_num in TOKENS.keys():
+                TOKENS[line_num].append(f"({token[1]}, {token[2]})")
+            else:
+                TOKENS[line_num] = [f"({token[1]}, {token[2]})"]
+
+            if token[1] == 'ID' or token[1] == 'KEYWORD':
                 SYMBOL_TABLE.add(token[2])
     else:
         break
 
 inputFile.close()
+
+
+with open('tokens.txt', 'w+') as tokenFile:
+    for line in TOKENS:
+        tokenFile.write(f"{line}.\t{' '.join(TOKENS[line])}\n")
