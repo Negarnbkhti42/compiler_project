@@ -14,6 +14,9 @@ WHITESPACE = [' ', '\n', '\r', '\v', '\t', '\f']
 inputFile = open('input.txt', 'r')
 
 line_num = 1
+starBackslash= ""
+comments=""
+errorString=""
 
 SYMBOL_TABLE = set()
 TOKENS = {}
@@ -186,4 +189,26 @@ inputFile.close()
 with open('tokens.txt', 'w+') as tokenFile:
     for line, tokens in TOKENS.items():
         tokenFile.write(f"{line}.\t{' '.join(tokens)}\n")
+        
+def write_error(errorString):
+    file1 = open('myfileForErrors.txt', 'w')
+    file1.writelines(errorString)
+    file1.close()
+
+def read_error():
+    file1 = open('myfileForErrors.txt', 'r')
+    print(file1.read())
+    file1.close()
+
+
+
+
+
+#
+#
+# # store its reference in the variable file1
+# # and "MyFile2.txt" in D:\Text in file2
+# file2 = open(r"D:\Text\MyFile2.txt", "w+")
+
+
 
