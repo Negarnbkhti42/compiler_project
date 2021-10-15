@@ -184,6 +184,6 @@ inputFile.close()
 
 
 with open('tokens.txt', 'w+') as tokenFile:
-    for line in TOKENS:
-        tokenFile.write(f"{line}.\t{' '.join(TOKENS[line])}\n")
+    for line, tokens in TOKENS.items():
+        tokenFile.write(f"{line}.\t{' '.join(tokens)}\n")
 
