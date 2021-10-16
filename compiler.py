@@ -221,9 +221,14 @@ with open('tokens.txt', 'w+') as tokenFile:
 
 
 def read_error():
-    file1 = open('lexical_errors.txt', 'r')
-    print(file1.read())
-    file1.close()
+    fileForErrors = open('lexical_errors.txt', 'r')
+    Lines = fileForErrors.readlines()
+    for line in Lines:
+        print(line.strip())
+    fileForErrors.close()
+
+
+read_error()
 
 #
 #
