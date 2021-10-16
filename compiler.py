@@ -63,8 +63,6 @@ def skip_whitespace_and_comment():
 
                     input_char = inputFile.read(1)
                 if value == '':
-                    errorString = "line number is {} , your error is : unclosed comment ".format(line_num)
-                    write_error(errorString)
                     return (False, 'Unclosed comment', value, start_line)
             else:
                 inputFile.seek(inputFile.tell() -1)
@@ -90,13 +88,9 @@ def get_id(value):
             else:
                 value+=input_char[0]
                 inputFile.seek(inputFile.tell() -1)
-                errorString="line number is {} , your error is : Invalid input ".format(line_num)
-                write_error(errorString)
                 return (False, 'Invalid input', value)
         else:
             value+=input_char
-            errorString = "line number is {} , your error is : Invalid input ".format(line_num)
-            write_error(errorString)
             return (False, 'Invalid input', value)
         input_char = inputFile.read(1)
     return (True, 'KEYWORD' if value in KEYWORD else 'ID', value)
@@ -112,8 +106,6 @@ def get_num(value):
 
     if input_char in LETTER:
         value += input_char
-        errorString = "line number is {} , your error is : invalid number ".format(line_num)
-        write_error(errorString)
         return (False, 'Invalid number', value)
 
     if input_char != '':
