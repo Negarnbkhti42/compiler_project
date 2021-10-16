@@ -175,28 +175,33 @@ def get_next_token():
     return (False, 'Invalid input', value)
 
 
+def add_token_to_dict(line, tokenType, tokenValue):
+    if line in TOKENS.keys():
+        TOKENS[line].append(f"({tokenType}, {tokenValue})")
+    else:
+        TOKENS[line] = [f"({tokenType}, {tokenValue})"]
+
+    if tokenType == 'ID' or tokenType == 'KEYWORD':
+        SYMBOL_TABLE.add(tokenValue)
+
+def add_tokens_to_file():
+    with open('tokens.txt', 'w+') as tokenFile:
+        for line, tokens in TOKENS.items():
+            tokenFile.write(f"{line}.\t{' '.join(tokens)}\n")
+
+
 
 while True:
     token = get_next_token()
     if token:
         if token[0]:
-
-            if line_num in TOKENS.keys():
-                TOKENS[line_num].append(f"({token[1]}, {token[2]})")
-            else:
-                TOKENS[line_num] = [f"({token[1]}, {token[2]})"]
-
-            if token[1] == 'ID' or token[1] == 'KEYWORD':
-                SYMBOL_TABLE.add(token[2])
+            add_token_to_dict(line= line_num,tokenType= token[1], tokenValue= token[2])
     else:
         break
 
 inputFile.close()
 
-
-with open('tokens.txt', 'w+') as tokenFile:
-    for line, tokens in TOKENS.items():
-        tokenFile.write(f"{line}.\t{' '.join(tokens)}\n")
+add_tokens_to_file()
         
 def write_error(errorString):
     file1 = open('myfileForErrors.txt', 'w')
