@@ -1,22 +1,24 @@
 # Negar Nobakhti 98171201
 # Neda Taghizadeh Serajeh 98170743
+from collections import defaultdict
 
 LETTER = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-        'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'
-        'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+          'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+          'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'
+                                                                      'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
+          'X', 'Y', 'Z']
 DIGIT = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 KEYWORD = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return']
 SYMBOL = [';', ':', ',', '[', ']', '{', '}', '(', ')', '+', '-', '*', '=', '<']
-COMMENT = ['/', '*', '//' , '/*', '*/']
+COMMENT = ['/', '*', '//', '/*', '*/']
 WHITESPACE = [' ', '\n', '\r', '\v', '\t', '\f']
 
 inputFile = open('input.txt', 'r')
 
 line_num = 1
-starBackslash= ""
-comments=""
-errorString=""
+starBackslash = ""
+comments = ""
+errorString = ""
 
 SYMBOL_TABLE = set()
 TOKENS = {}
@@ -63,14 +65,13 @@ def skip_whitespace_and_comment():
 
                     input_char = inputFile.read(1)
                 if value == '':
-                    errorString = "line number is {} , your error is : unclosed comment ".format(lineno)
-                    write_error(errorString)
                     return (False, 'Unclosed comment', value, start_line)
             else:
-                inputFile.seek(inputFile.tell() -1)
+                inputFile.seek(inputFile.tell() - 1)
                 return (False, 'Invalid input', value[0])
         else:
             return value
+
 
 def get_id(value):
     input_char = inputFile.read(1)
@@ -79,24 +80,20 @@ def get_id(value):
         if input_char in LETTER or input_char in DIGIT:
             value += input_char
         elif input_char in SYMBOL or input_char in WHITESPACE:
-            inputFile.seek(inputFile.tell()-1)
+            inputFile.seek(inputFile.tell() - 1)
             return (True, 'KEYWORD' if value in KEYWORD else 'ID', value)
         elif input_char == COMMENT[0]:
-            input_char+=input_char.read(1)
+            input_char += input_char.read(1)
 
             if input_char in COMMENT:
-                inputFile.seek(inputFile.tell() -2)
+                inputFile.seek(inputFile.tell() - 2)
                 return (True, 'KEYWORD' if value in KEYWORD else 'ID', value)
             else:
-                value+=input_char[0]
-                inputFile.seek(inputFile.tell() -1)
-                errorString="line number is {} , your error is : Invalid input ".format(line_num)
-                write_error(errorString)
+                value += input_char[0]
+                inputFile.seek(inputFile.tell() - 1)
                 return (False, 'Invalid input', value)
         else:
-            value+=input_char
-            errorString = "line number is {} , your error is : Invalid input ".format(line_num)
-            write_error(errorString)
+            value += input_char
             return (False, 'Invalid input', value)
         input_char = inputFile.read(1)
     return (True, 'KEYWORD' if value in KEYWORD else 'ID', value)
@@ -112,26 +109,26 @@ def get_num(value):
 
     if input_char in LETTER:
         value += input_char
-        errorString = "line number is {} , your error is : invalid number ".format(lineno)
-        write_error(errorString)
         return (False, 'Invalid number', value)
 
     if input_char != '':
-        inputFile.seek(inputFile.tell() -1)
-    return(True,'NUM', value)
+        inputFile.seek(inputFile.tell() - 1)
+    return (True, 'NUM', value)
 
 
 def get_symbol(value):
-    if value=="=":
+    if value == "=":
         input_char = inputFile.read(1)
 
-        if input_char=="=":
-            value+=input_char
-            return (True, 'SYMBOL', value)  #==
+        if input_char == "=":
+            value += input_char
+            return (True, 'SYMBOL', value)  # ==
         if input_char in LETTER or input_char in DIGIT or input_char in WHITESPACE or input_char in COMMENT:
-            inputFile.seek(inputFile.tell() -1)
-            return (True, 'SYMBOL', value) #=
+            inputFile.seek(inputFile.tell() - 1)
+            return (True, 'SYMBOL', value)  # =
         value += input_char
+
+        #
         return (False, 'Invalid input', value)
     elif value == '*':
         input_char = inputFile.read(1)
@@ -140,10 +137,10 @@ def get_symbol(value):
             value += input_char
             return (False, 'Unmatched comment', value)
         else:
-            inputFile.seek(inputFile.tell() -1)
+            inputFile.seek(inputFile.tell() - 1)
             return (True, 'SYMBOL', value)
     else:
-        return (True, 'SYMBOL', value) # harchizi joz   ==  va  =
+        return (True, 'SYMBOL', value)  # harchizi joz   ==  va  =
 
 
 def get_next_token():
@@ -157,23 +154,41 @@ def get_next_token():
     if value == '':
         return None
 
-
-# ID/KEYWORD////////////////////
+    # ID/KEYWORD////////////////////
     if value in LETTER:
         return get_id(value)
 
-# NUM///////////////////////////
+    # NUM///////////////////////////
 
     if value in DIGIT:
         return get_num(value)
 
-# SYMBOL//////////////////////
+    # SYMBOL//////////////////////
 
     if value in SYMBOL:
         return get_symbol(value)
 
     return (False, 'Invalid input', value)
 
+
+def addErrorToDict():
+    for k, val in ERRORS.items():
+        if k in ERRORS.keys():
+            ERRORS[k].append(val)
+        else:
+            ERRORS[k] = [val]
+
+
+def addErrorToFile():
+    fileForError = open('lexical_errors.txt', 'w')
+
+    if ERRORS.keys() == 0:
+        fileForError.write("There is no lexical error.")
+    else:
+        for line, error in TOKENS.items():
+            tokenFile.write(f"{line}.\t{' '.join(error)}\n")
+
+    fileForError.close()
 
 
 while True:
@@ -188,29 +203,27 @@ while True:
 
             if token[1] == 'ID' or token[1] == 'KEYWORD':
                 SYMBOL_TABLE.add(token[2])
+
+        else:
+            addErrorToDict()
+
+
     else:
         break
 
 inputFile.close()
 
+addErrorToFile()
 
 with open('tokens.txt', 'w+') as tokenFile:
     for line, tokens in TOKENS.items():
         tokenFile.write(f"{line}.\t{' '.join(tokens)}\n")
-        
-def write_error(errorString):
-    file1 = open('myfileForErrors.txt', 'w')
-    file1.writelines(errorString)
-    file1.close()
+
 
 def read_error():
-    file1 = open('myfileForErrors.txt', 'r')
+    file1 = open('lexical_errors.txt', 'r')
     print(file1.read())
     file1.close()
-
-
-
-
 
 #
 #
