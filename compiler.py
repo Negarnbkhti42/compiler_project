@@ -63,7 +63,7 @@ def skip_whitespace_and_comment():
 
                     input_char = inputFile.read(1)
                 if value == '':
-                    errorString = "line number is {} , your error is : unclosed comment ".format(lineno)
+                    errorString = "line number is {} , your error is : unclosed comment ".format(line_num)
                     write_error(errorString)
                     return (False, 'Unclosed comment', value, start_line)
             else:
@@ -112,7 +112,7 @@ def get_num(value):
 
     if input_char in LETTER:
         value += input_char
-        errorString = "line number is {} , your error is : invalid number ".format(lineno)
+        errorString = "line number is {} , your error is : invalid number ".format(line_num)
         write_error(errorString)
         return (False, 'Invalid number', value)
 
