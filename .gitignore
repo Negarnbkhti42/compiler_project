@@ -1,3 +1,5 @@
 PA1/*
 input.txt
-Tokens.txt
+tokens.txt
+lexical_errors.txt
+symbol_table.txt

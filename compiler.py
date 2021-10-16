@@ -17,7 +17,7 @@ inputFile = open('input.txt', 'r')
 
 line_num = 1
 
-SYMBOL_TABLE = []
+RECOGNIZED_IDS = []
 TOKENS = {}
 ERRORS = {}
 
@@ -63,7 +63,7 @@ def skip_whitespace_and_comment():
                             break
 
                     input_char = inputFile.read(1)
-                if value == '':
+                if input_char == '':
                     return (False, 'Unclosed comment', value, start_line)
             else:
                 inputFile.seek(inputFile.tell() - 1)
@@ -155,7 +155,7 @@ def get_next_token():
 
     value = skip_whitespace_and_comment()
 
-    if value is tuple:
+    if isinstance(value, tuple):
         return value
 
     if value == '':
@@ -186,8 +186,8 @@ def add_token_to_dict(line, token_type, token_value):
     else:
         TOKENS[line] = [f"({token_type}, {token_value})"]
 
-    if (token_type == 'ID' or token_type == 'KEYWORD') and (token_value not in SYMBOL_TABLE):
-        SYMBOL_TABLE.add(token_value)
+    if token_type == 'ID' and token_value not in RECOGNIZED_IDS:
+        RECOGNIZED_IDS.append(token_value)
 
 
 def add_tokens_to_file():
@@ -215,7 +215,7 @@ def addErrorToFile():
     if len(ERRORS) == 0:
         fileForError.write("There is no lexical error.")
     else:
-        for line, error in TOKENS.items():
+        for line, error in ERRORS.items():
             fileForError.write(f"{line}.\t{' '.join(error)}\n")
 
     fileForError.close()
@@ -224,8 +224,13 @@ def add_symbols_to_table():
     '''put all symbols in a file '''
 
     with open('symbol_table.txt', 'w+') as symbol_file:
-        for symbol, index in enumerate(SYMBOL_TABLE):
-            symbol_file.write(f"{index}.\t{symbol}\n")
+        index = 1
+        for keyword in KEYWORD:
+            symbol_file.write(f"{index}.\t{keyword}\n")
+            index += 1
+        for identifier in RECOGNIZED_IDS:
+            symbol_file.write(f"{index}.\t{identifier}\n")
+            index += 1
 
 
 while True:
@@ -245,8 +250,8 @@ while True:
 inputFile.close()
 
 add_tokens_to_file()
-
 addErrorToFile()
+add_symbols_to_table()
 
 # with open('tokens.txt', 'w+') as tokenFile:
 #     for line, tokens in TOKENS.items():
