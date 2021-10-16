@@ -14,9 +14,6 @@ WHITESPACE = [' ', '\n', '\r', '\v', '\t', '\f']
 inputFile = open('input.txt', 'r')
 
 line_num = 1
-starBackslash= ""
-comments=""
-errorString=""
 
 SYMBOL_TABLE = set()
 TOKENS = {}
@@ -24,6 +21,8 @@ ERRORS = {}
 
 
 def skip_whitespace_and_comment():
+    ''' for skipping unneeded whitespaces and comments '''
+    
     global line_num
 
     while True:
@@ -71,6 +70,8 @@ def skip_whitespace_and_comment():
             return value
 
 def get_id(value):
+    ''' returns IDs and KEYWORDs '''
+
     input_char = inputFile.read(1)
     while input_char != '':
 
@@ -97,6 +98,8 @@ def get_id(value):
 
 
 def get_num(value):
+    ''' returns NUMs '''
+
     input_char = inputFile.read(1)
     # biad adad haro biabe
 
@@ -114,6 +117,8 @@ def get_num(value):
 
 
 def get_symbol(value):
+    ''' returns SYMBOLs '''
+
     if value=="=":
         input_char = inputFile.read(1)
 
@@ -139,6 +144,8 @@ def get_symbol(value):
 
 
 def get_next_token():
+    ''' the ultimate function for finding tokens '''
+
     global line_num
 
     value = skip_whitespace_and_comment()
@@ -167,16 +174,20 @@ def get_next_token():
     return (False, 'Invalid input', value)
 
 
-def add_token_to_dict(line, tokenType, tokenValue):
-    if line in TOKENS.keys():
-        TOKENS[line].append(f"({tokenType}, {tokenValue})")
-    else:
-        TOKENS[line] = [f"({tokenType}, {tokenValue})"]
+def add_token_to_dict(line, token_type, token_value):
+    ''' adds valid tokens to the dict object '''
 
-    if tokenType == 'ID' or tokenType == 'KEYWORD':
-        SYMBOL_TABLE.add(tokenValue)
+    if line in TOKENS.keys():
+        TOKENS[line].append(f"({token_type}, {token_value})")
+    else:
+        TOKENS[line] = [f"({token_type}, {token_value})"]
+
+    if token_type == 'ID' or token_type == 'KEYWORD':
+        SYMBOL_TABLE.add(token_value)
 
 def add_tokens_to_file():
+    ''' puts all recognized tokens in a file '''
+
     with open('tokens.txt', 'w+') as tokenFile:
         for line, tokens in TOKENS.items():
             tokenFile.write(f"{line}.\t{' '.join(tokens)}\n")
@@ -187,7 +198,7 @@ while True:
     token = get_next_token()
     if token:
         if token[0]:
-            add_token_to_dict(line= line_num,tokenType= token[1], tokenValue= token[2])
+            add_token_to_dict(line= line_num,token_type= token[1], token_value= token[2])
     else:
         break
 
