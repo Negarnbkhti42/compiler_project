@@ -259,27 +259,3 @@ inputFile.close()
 add_tokens_to_file()
 addErrorToFile()
 add_symbols_to_table()
-
-# with open('tokens.txt', 'w+') as tokenFile:
-#     for line, tokens in TOKENS.items():
-#         tokenFile.write(f"{line}.\t{' '.join(tokens)}\n")
-
-
-# def read_error():
-#     fileForErrors = open('lexical_errors.txt', 'r')
-#     Lines = fileForErrors.readlines()
-#     for line in Lines:
-#         print(line.strip())
-#     fileForErrors.close()
-
-
-# read_error()
-
-#
-#
-# # store its reference in the variable file1
-# # and "MyFile2.txt" in D:\Text in file2
-# file2 = open(r"D:\Text\MyFile2.txt", "w+")
-
-
-
