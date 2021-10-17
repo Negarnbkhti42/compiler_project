@@ -1,6 +1,5 @@
 # Negar Nobakhti 98171201
 # Neda Taghizadeh Serajeh 98170743
-from collections import defaultdict
 
 LETTER = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
           'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
