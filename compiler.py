@@ -145,9 +145,12 @@ def get_symbol(value):
         if input_char == '/':
             value += input_char
             return (False, 'Unmatched comment', value)
-        else:
+        elif input_char in LETTER or input_char in DIGIT or input_char in WHITESPACE:
             inputFile.seek(inputFile.tell() - 1)
             return (True, 'SYMBOL', value)
+        else:
+            value += input_char
+            return (False, 'Invalid input', value)
     else:
         return (True, 'SYMBOL', value)  # harchizi joz   ==  va  =
 
