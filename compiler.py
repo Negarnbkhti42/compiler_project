@@ -62,6 +62,9 @@ def skip_whitespace_and_comment():
 
                         if input_char == "/":
                             break
+                        elif input_char == '\n':
+                            value+= input_char
+                            line_num += 1
 
                     input_char = inputFile.read(1)
                 if input_char == '':
