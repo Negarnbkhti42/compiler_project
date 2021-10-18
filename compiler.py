@@ -33,7 +33,6 @@ def skip_whitespace_and_comment():
 
     while True:
         value = inputFile.read(1)
-
         if value in WHITESPACE:
             if value == '\n':
                 line_num += 1
@@ -50,8 +49,6 @@ def skip_whitespace_and_comment():
 
                 if value == '\n':
                     line_num += 1
-                else:
-                    return value
             elif value == '/*':
                 start_line = line_num
                 input_char = inputFile.read(1)
@@ -136,8 +133,6 @@ def get_symbol(value):
             inputFile.seek(inputFile.tell() - 1)
             return (True, 'SYMBOL', value)  # =
         value += input_char
-
-        #
         return (False, 'Invalid input', value)
     elif value == '*':
         input_char = inputFile.read(1)
@@ -157,8 +152,6 @@ def get_symbol(value):
 
 def get_next_token():
     ''' the ultimate function for finding tokens '''
-
-    global line_num
 
     value = skip_whitespace_and_comment()
 
