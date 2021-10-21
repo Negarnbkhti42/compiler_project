@@ -21,8 +21,7 @@ inputFile = open('input.txt', 'r')
 
 line_num = 1
 pointer_position = 0
-
-# handle your own positioning    
+    
 def get_char():
     ''' Reads one character from file, returns character and position '''
     global pointer_position
