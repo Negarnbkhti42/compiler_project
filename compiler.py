@@ -259,8 +259,19 @@ while True:
             add_token_to_dict(line= line_num,token_type= token[1], token_value= token[2])
 
         else:
-            line = token[3] if token[1] == 'Unclosed comment' else line_num
-            addErrorToDict(line= line, error_type=token[1], error_value=token[2])
+            line = 0
+            value = ''
+            if token[1] == 'Unclosed comment':
+                line = token[3]
+                if len(token[2]) > 7:
+                    value = token[2][:7] + '...'
+                else:
+                    value = token[2]
+            else:
+                line = line_num
+                value = token[2]
+                
+            addErrorToDict(line= line, error_type=token[1], error_value=value)
 
 
     else:
