@@ -82,6 +82,8 @@ def skip_whitespace_and_comment():
                     return (False, 'Unclosed comment', value, start_line)
             else:
                 move_pointer(-1)
+                if value == '/\n':
+                    move_pointer(-1)
                 return (False, 'Invalid input', value[0])
         else:
             return value
@@ -155,7 +157,7 @@ def get_symbol(value):
             value += input_char
             return (False, 'Unmatched comment', value)
         elif input_char in LETTER or input_char in DIGIT or input_char in WHITESPACE:
-            # move_pointer(-1)
+            move_pointer(-1)
             return (True, 'SYMBOL', value)
         else:
             value += input_char
