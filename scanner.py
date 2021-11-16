@@ -8,7 +8,7 @@ class Token:
 
 LETTER = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 DIGIT = set("0123456789")
-KEYWORD = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return']
+KEYWORD = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return', 'endif']
 SYMBOL = [';', ':', ',', '[', ']', '{', '}', '(', ')', '+', '-', '*', '=', '<']
 COMMENT = ['/', '*', '//', '/*', '*/']
 WHITESPACE = set(" \n\r\v\t\f")
@@ -183,7 +183,7 @@ def get_new_token():
         return value
 
     if value == '':
-        return '$'
+        return Token(True, 'EOF', '$', line_num)
 
     # ID/KEYWORD////////////////////
     if value in LETTER:
