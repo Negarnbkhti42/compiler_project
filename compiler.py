@@ -120,6 +120,7 @@ def declaration_prime_procedure(token):
     else:
         pass
 
+
 def var_declaration_prime_procedure(token):
     procedure = 'Var-declaration-prime'
     root = Node(procedure)
@@ -133,27 +134,27 @@ def var_declaration_prime_procedure(token):
     if token_matches_branch(token, Tables.PRODUCTION[1]):
         if token.value == '[':
             child = Node('(SYMBOL, [)', parent= root)
+            token = scanner.get_next_token()
         else:
             pass
         
-        token = scanner.get_next_token()
         if token.type == 'NUM':
             child = Node(f"(NUM, {token.value})", parent= root)
+            token = scanner.get_next_token()
         else:
             pass
 
-        token = scanner.get_next_token()
         if token.value == ']':
             child = Node('(SYMBOL, ])', parent= root)
+            token = scanner.get_next_token()
         else:
             pass
 
-        token = scanner.get_next_token()
         if token.value == ';':
             child = Node('(SYMBOL, ;)', parent= root)
         else:
             pass
-        
+
         return root
 
     if token in Tables.FOLLOW[procedure]:
@@ -161,7 +162,162 @@ def var_declaration_prime_procedure(token):
     else:
         pass
 
-def fun_declaration_prime(token)
+
+def fun_declaration_prime(token):
+    procedure = 'Fun-declaration-prime'
+    root = Node(procedure)
+
+    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
+        if token.value == '(':
+            child = Node('(SYMBOL, ()', parent= root)
+            token = scanner.get_next_token()
+        else:
+            pass
+
+        child = params_procedure(token)
+        child.parent = root
+
+        if token.value == ')':
+            child = Node('(SYMBOL, ))', parent= root)
+            token = scanner.get_next_token()
+        else:
+            pass
+
+        child = compound_stmt_procedure(token)
+        child.parent = root
+    
+        return root
+
+    if token in Tables.FOLLOW[procedure]:
+        pass
+    else:
+        pass
+
+
+def type_specifier_procedure(token):
+    procedure = 'Type-specifier'
+    root = Node(procedure)
+
+    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
+        if token.value == 'int':
+            child = Node('(KEYWORD, int)', parent= root)
+        else:
+            pass
+        return root
+    if token_matches_branch(token, Tables.PRODUCTION[procedure][1]):
+        if token.value == 'void':
+            child = Node('(KEYWORD, void)', parent= root)
+        else:
+            pass
+        return root
+
+    if token in Tables.FOLLOW[procedure]:
+        pass
+    else:
+        pass
+
+
+def params_procedure(token):
+    procedure= 'Params'
+    root = Node(procedure)
+
+    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
+        if token.value == 'int':
+            child = Node('(KEYWORD, int)', parent= root)
+            token = scanner.get_next_token()
+        else:
+            pass
+
+        if token.type == 'ID':
+            child = Node(f"(ID, {token.value})", parent= root)
+            token = scanner.get_next_token()
+        else:
+            pass
+        
+        child = param_prime_procedure(token)
+        child.parent = root
+
+        token = scanner.get_next_token()
+        child = param_list_procedure(token)
+        child.parent = root
+
+        return root
+    if token_matches_branch(token, Tables.PRODUCTION[procedure][1]):
+        if token.value == 'void':
+            child = Node('(KEYWORD, void)', parent= root)
+        else:
+            pass
+        return root
+
+    if token in Tables.FOLLOW[procedure]:
+        pass
+    else:
+        pass
+
+def param_list_procedure(token):
+    procedure = 'Param-list'
+    root = Node(procedure)
+
+    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
+        if token.value == ',':
+            child = Node('(SYMBOL, ,)', parent= root)
+            token = scanner.get_next_token()
+        else:
+            pass
+
+        child = param_procedure(token)
+        child.parent = root
+        
+        token = scanner.get_next_token()
+        child = param_list_procedure(token)
+        child.parent = root
+
+        return root
+    
+    child = Node('epsilon', parent= root)
+    return root
+
+def param_procedure(token):
+    procedure = 'Param'
+    root = Node(procedure)
+
+    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
+        child = declaration_initial_procedure(token)
+        child.parent = root
+
+        token = scanner.get_next_control()
+        child = param_prime_procedure(token)
+        child.parent = root
+
+        return root
+    
+    if token in Tables.FOLLOW[procedure]:
+        pass
+    else:
+        pass
+
+def param_prime_procedure(token):
+    procedure = 'Param-prime'
+    root = Node(procedure)
+
+    if token_matches_branch(token, Tables.PRODUCTION[procedure[0]]):
+        if token.value == '[':
+            child = Node('(SYMBOL, [)', parent= root)
+            token = scanner.get_next_token()
+        else:
+            pass
+
+        if token.value == ']':
+            child = Node('(SYMBOL, ])', parent= root)
+        else:
+            pass
+
+        return root
+    
+    if token in Tables.FOLLOW[procedure]:
+        pass
+    else:
+        pass
 
 
 

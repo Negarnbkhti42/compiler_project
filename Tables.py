@@ -6,7 +6,7 @@ PRODUCTION = {
     'Declaration-prime' : [['Fun-declaration-prime'], ['Var-declaration-prime']],
     'Var-declaration-prime' : [[';'], ['[', 'NUM', ']', ';']],
     'Fun-declaration-prime' :  [['(', 'Params', ')', 'Compound-stmt']],
-    'Type-specifier' : ['int', 'void'],
+    'Type-specifier' : [['int'], ['void']],
     'Params' : [['int', 'ID', 'Param-prime', 'Param-list'], ['void']],
     'Param-list' : [[',', 'Param', 'Param-list'], ['EPSILON']],
     'Param' : [['Declaration-initial', 'Param-prime']],
