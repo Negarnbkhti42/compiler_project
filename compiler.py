@@ -91,6 +91,21 @@ def declaration_prime_procedure(token):
 
     # TODO: error handle
 
+def var_declaration_prime_procedure(token):
+    procedure = 'Var-declaration-prime'
+    root = Node(procedure)
+
+    if token.value == ';':
+        child = Node('(SYMBOL, ;)', parent= root)
+        return root
+    if token.value == '[':
+        child = Node('(SYMBOL, [)', parent= root)
+        token = scanner.get_next_token()
+        if token.type == 'NUM':
+            child = Node(f"(NUM, {token.value})")
+
+
+
 
 
 
