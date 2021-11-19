@@ -9,12 +9,21 @@ import scanner
 import Tables
 from anytree import Node, RenderTree
 
+def procedure_is_terminal(procedure):
+    return not (procedure in Tables.PRODUCTION.keys())
+
 def token_matches_branch(token, branch):
     for value in branch:
-        if token in Tables.FIRST[value]:
-            return True
-        if 'EPSILON' not in Tables.FIRST[value]:
+        is_terminal = procedure_is_terminal(value)
+        if is_terminal:
+            if token.value == value or token.type == value:
+                return True
             return False
+        else:
+            if token in Tables.FIRST[value]:
+                return True
+            if 'EPSILON' not in Tables.FIRST[value]:
+                return False
 
 
 def program_procedure(token):
@@ -106,21 +115,44 @@ def declaration_prime_procedure(token):
         child.parent = root
         return root
 
-    # TODO: error handle
+    if token in Tables.FOLLOW[procedure]:
+        pass
+    else:
+        pass
 
 def var_declaration_prime_procedure(token):
     procedure = 'Var-declaration-prime'
     root = Node(procedure)
 
-    if token.value == ';':
-        child = Node('(SYMBOL, ;)', parent= root)
+    if token_matches_branch(token, Tables.PRODUCTION[0]):
+        if token.value == ';':
+            child = Node('(SYMBOL, ;)', parent= root)
+        else:
+            pass
         return root
-    if token.value == '[':
-        child = Node('(SYMBOL, [)', parent= root)
-        token = scanner.get_next_token()
+    if token_matches_branch(token, Tables.PRODUCTION[1]):
+        if token.value == '[':
+            child = Node('(SYMBOL, [)', parent= root)
+        else:
+            pass
         if token.type == 'NUM':
-            child = Node(f"(NUM, {token.value})")
+            child = Node(f"(NUM, {token.value})", parent= root)
+        else:
+            pass
+        if token.value == ']':
+            child = Node('(SYMBOL, ])', parent= root)
+        else:
+            pass
+        if token.value == ';':
+            child = Node('(SYMBOL, ;)', parent= root)
+        else:
+            pass
+        return root
 
+    if token in Tables.FOLLOW[procedure]:
+        pass
+    else:
+        pass
 
 
 

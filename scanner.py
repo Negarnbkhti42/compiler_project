@@ -1,8 +1,8 @@
 class Token:
 
-    def __init__(self, valid, token_type, value, line):
+    def __init__(self, valid, type, value, line):
         self.valid = valid
-        self.type = token_type
+        self.type = type
         self.value = value
         self.line = line
 
