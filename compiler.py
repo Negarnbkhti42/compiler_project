@@ -135,24 +135,33 @@ def var_declaration_prime_procedure(token):
             child = Node('(SYMBOL, [)', parent= root)
         else:
             pass
+        
+        token = scanner.get_next_token()
         if token.type == 'NUM':
             child = Node(f"(NUM, {token.value})", parent= root)
         else:
             pass
+
+        token = scanner.get_next_token()
         if token.value == ']':
             child = Node('(SYMBOL, ])', parent= root)
         else:
             pass
+
+        token = scanner.get_next_token()
         if token.value == ';':
             child = Node('(SYMBOL, ;)', parent= root)
         else:
             pass
+        
         return root
 
     if token in Tables.FOLLOW[procedure]:
         pass
     else:
         pass
+
+def fun_declaration_prime(token)
 
 
 
