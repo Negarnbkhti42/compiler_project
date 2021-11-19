@@ -21,18 +21,24 @@ def program_procedure(token):
     procedure = 'Program'
     root = Node(procedure)
 
-    child = declaration_list_procedure(token)
-    child.parent = root
+    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
 
-    token = scanner.get_next_token()
-    if token.value == '$':
-        child = Node('$', parent=root)
+        child = declaration_list_procedure(token)
+        child.parent = root
 
-    return root
+        token = scanner.get_next_token()
+        if token.value == '$':
+            child = Node('$', parent=root)
+
+        return root
+    if token in Tables.FOLLOW[procedure]:
+        pass
+    else:
+        pass
 
 
 def declaration_list_procedure(token):
-    procedure = 'Declaration_list'
+    procedure = 'Declaration-list'
     root = Node(procedure)
 
     if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
@@ -42,8 +48,7 @@ def declaration_list_procedure(token):
         child = declaration_list_procedure(token)
         child.parent = root
     else:
-        if token not in Tables.FOLLOW[procedure]:
-            pass
+        child = Node('epsilon', root)
 
     return root
 
@@ -52,28 +57,40 @@ def declaration_procedure(token):
     procedure = 'Declaration'
     root = Node(procedure)
 
-    child = declaration_initial_procedure(token)
-    child.parent = root
+    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
+        child = declaration_initial_procedure(token)
+        child.parent = root
 
-    token = scanner.get_next_token()
-    child = declaration_prime_procedure(token)
-    child.parent = root
-
-    return root
+        token = scanner.get_next_token()
+        child = declaration_prime_procedure(token)
+        child.parent = root
+        return root
+    
+    if token in Tables.FOLLOW[procedure]:
+        pass
+    else:
+        pass
 
 
 def declaration_initial_procedure(token):
     procedure = 'Declaration-initial'
     root = Node(procedure)
 
-    child = type_specifier_procedure(token)
-    child.parent = root
+    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
+        child = type_specifier_procedure(token)
+        child.parent = root
 
-    token = scanner.get_next_token()
-    if token.type == 'ID':
-        child = Node(f"(ID, {token.value})", parent= root)
+        token = scanner.get_next_token()
+        if token.type == 'ID':
+            child = Node(f"(ID, {token.value})", parent= root)
+        else:
+            pass
+        return root
     
-    return root
+    if token in Tables.FOLLOW[procedure]:
+        pass
+    else:
+        pass
 
 
 def declaration_prime_procedure(token):
