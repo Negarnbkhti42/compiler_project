@@ -254,6 +254,7 @@ def params_procedure(token):
     else:
         pass
 
+
 def param_list_procedure(token):
     procedure = 'Param-list'
     root = Node(procedure)
@@ -277,6 +278,7 @@ def param_list_procedure(token):
     child = Node('epsilon', parent= root)
     return root
 
+
 def param_procedure(token):
     procedure = 'Param'
     root = Node(procedure)
@@ -285,7 +287,7 @@ def param_procedure(token):
         child = declaration_initial_procedure(token)
         child.parent = root
 
-        token = scanner.get_next_control()
+        token = scanner.get_next_token()
         child = param_prime_procedure(token)
         child.parent = root
 
@@ -295,6 +297,7 @@ def param_procedure(token):
         pass
     else:
         pass
+
 
 def param_prime_procedure(token):
     procedure = 'Param-prime'
@@ -320,8 +323,174 @@ def param_prime_procedure(token):
         pass
 
 
+def compound_stmt_procedure(token):
+    procedure = 'Compound-stmt'
+    root = Node(procedure)
+
+    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
+        if token.value == '{':
+            child = Node('(SYMBOL, {)', parent= root)
+            token = scanner.get_next_token()
+        else:
+            pass
+
+        child = declaration_list_procedure(token)
+        child.parent = root
+        
+        token = scanner.get_next_token()
+        child = Statement_list_procedure(token)
+        child.parent = root
+
+        token = scanner.get_next_token()
+        if token.value == '}':
+            child = Node('(SYMBOL, }', parent= root)
+        else:
+            pass
+        return root
+
+    if token in Tables.FOLLOW[procedure]:
+        pass
+    else:
+        pass
 
 
+def Statement_list_procedure(token):
+    procedure = 'Statement-list'
+    root = Node(procedure)
+
+    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
+        child = statement_procedure(token)
+        child.parent = root
+
+        token = scanner.get_next_token()
+        child = Statement_list_procedure(token)
+        child.parent = root
+
+        return root
+
+    child = Node('epsilon', parent= root)
+    return root
+
+
+def statement_procedure(token):
+    procedure = 'Statement'
+    root = Node(procedure)
+
+    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
+        child = expression_stmt_procedure(token)
+        child.parent = root
+
+        return root
+
+    if token_matches_branch(token, Tables.PRODUCTION[procedure][1]):
+        child = compound_stmt_procedure(token)
+        child.parent = root
+
+        return root
+
+    if token_matches_branch(token, Tables.PRODUCTION[procedure][2]):
+        child = selection_stmt_procedure(token)
+        child.parent = root
+
+        return root
+
+    if token_matches_branch(token, Tables.PRODUCTION[procedure][3]):
+        child = iteration_stmt_procedure(token)
+        child.parent = root
+
+        return root
+
+    if token_matches_branch(token, Tables.PRODUCTION[procedure][4]):
+        child = return_stmt_procedure(token)
+        child.parent = root
+
+        return root
+
+    if token in Tables.FOLLOW[procedure]:
+        pass
+    else:
+        pass
+
+
+def expression_stmt_procedure(token):
+    procedure = 'Expression-stmt'
+    root = Node(procedure)
+
+    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
+        child = expression_procedure(token)
+        child.parent = root
+
+        token = scanner.get_next_token()
+        if token.value == ';':
+            child = Node('(SYMBOL, ;)', parent= root)
+        else:
+            pass
+        return root
+    if token_matches_branch(token, Tables.PRODUCTION[procedure][1]):
+        if token.value == 'break':
+            child = Node('(KEYWORD, break)', parent= root)
+            token = scanner.get_next_token()
+        else:
+            pass
+
+        if token.value == ';':
+            child = Node('(SYMBOL, ;)', parent= root)
+        else:
+            pass
+        return root
+    if token_matches_branch(token, Tables.PRODUCTION[procedure][2]):
+        if token.value == ';':
+            child = Node('(SYMBOL, ;)', parent= root)
+        else:
+            pass
+        return root
+
+    if token in Tables.FOLLOW[procedure]:
+        pass
+    else:
+        pass
+
+
+def selection_stmt_procedure(token):
+    procedure = 'Selection-stmt'
+    root = Node(procedure)
+
+    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
+        if token.value == 'if':
+            child = Node('(KEYWORD, if)', parent= root)
+            token = scanner.get_next_token()
+        else:
+            pass
+
+        if token.value == '(':
+            child = Node('(SYMBOL, ()', parent= root)
+            token = scanner.get_next_token()
+        else:
+            pass
+
+        child = expression_procedure(token)
+        child.parent = root
+
+        token = scanner.get_next_token()
+        if token.value == ')':
+            child = Node('(SYMBOL, ))', parent= root)
+            token = scanner.get_next_token()
+        else:
+            pass
+
+        child = statement_stmt_procedure(token)
+        child.parent = root
+
+        token = scanner.get_next_token()
+        child = else_stmt_procedure(token)
+        child.parent = root
+
+        return root
+    
+    if token in Tables.FOLLOW[procedure]:
+        pass
+    else:
+        pass
 
 scanner.openFile('input.txt')
 
@@ -330,3 +499,5 @@ token = scanner.get_next_token()
 tree = program_procedure(token)
 
 scanner.close_file()
+
+
