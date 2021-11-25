@@ -9,10 +9,14 @@ import scanner
 import Tables
 from anytree import Node, RenderTree
 
+
+scanner.openFile('input.txt')
+token = scanner.get_next_token()
+
 def procedure_is_terminal(procedure):
     return not (procedure in Tables.PRODUCTION.keys())
 
-def token_matches_branch(token, branch):
+def token_matches_branch(branch):
     for value in branch:
         is_terminal = procedure_is_terminal(value)
         if is_terminal:
@@ -26,13 +30,15 @@ def token_matches_branch(token, branch):
                 return False
 
 
-def program_procedure(token):
+def program_procedure():
+    global token
+
     procedure = 'Program'
     root = Node(procedure)
 
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
+    if token_matches_branch(Tables.PRODUCTION[procedure][0]):
 
-        child = declaration_list_procedure(token)
+        child = declaration_list_procedure()
         child.parent = root
 
         token = scanner.get_next_token()
@@ -46,15 +52,17 @@ def program_procedure(token):
         pass
 
 
-def declaration_list_procedure(token):
+def declaration_list_procedure():
+    global token
+
     procedure = 'Declaration-list'
     root = Node(procedure)
 
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
-        child = declaration_procedure(token)
+    if token_matches_branch(Tables.PRODUCTION[procedure][0]):
+        child = declaration_procedure()
         child.parent = root
         token = scanner.get_next_token()
-        child = declaration_list_procedure(token)
+        child = declaration_list_procedure()
         child.parent = root
     else:
         child = Node('epsilon', root)
@@ -62,16 +70,18 @@ def declaration_list_procedure(token):
     return root
 
 
-def declaration_procedure(token):
+def declaration_procedure():
+    global token
+
     procedure = 'Declaration'
     root = Node(procedure)
 
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
-        child = declaration_initial_procedure(token)
+    if token_matches_branch(Tables.PRODUCTION[procedure][0]):
+        child = declaration_initial_procedure()
         child.parent = root
 
         token = scanner.get_next_token()
-        child = declaration_prime_procedure(token)
+        child = declaration_prime_procedure()
         child.parent = root
         return root
     
@@ -81,12 +91,14 @@ def declaration_procedure(token):
         pass
 
 
-def declaration_initial_procedure(token):
+def declaration_initial_procedure():
+    global token
+
     procedure = 'Declaration-initial'
     root = Node(procedure)
 
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
-        child = type_specifier_procedure(token)
+    if token_matches_branch(Tables.PRODUCTION[procedure][0]):
+        child = type_specifier_procedure()
         child.parent = root
 
         token = scanner.get_next_token()
@@ -102,16 +114,18 @@ def declaration_initial_procedure(token):
         pass
 
 
-def declaration_prime_procedure(token):
+def declaration_prime_procedure():
+    global token
+
     procedure = 'Declaration-prime'
     root = Node(procedure)
 
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
-        child = fun_declaration_prime_procedure(token)
+    if token_matches_branch(Tables.PRODUCTION[procedure][0]):
+        child = fun_declaration_prime_procedure()
         child.parent = root
         return root
-    if token_matches_branch(token, Tables.PRODUCTION[1]):
-        child = var_declaration_prime_procedure(token)
+    if token_matches_branch(Tables.PRODUCTION[1]):
+        child = var_declaration_prime_procedure()
         child.parent = root
         return root
 
@@ -121,17 +135,19 @@ def declaration_prime_procedure(token):
         pass
 
 
-def var_declaration_prime_procedure(token):
+def var_declaration_prime_procedure():
+    global token
+
     procedure = 'Var-declaration-prime'
     root = Node(procedure)
 
-    if token_matches_branch(token, Tables.PRODUCTION[0]):
+    if token_matches_branch(Tables.PRODUCTION[0]):
         if token.value == ';':
             child = Node('(SYMBOL, ;)', parent= root)
         else:
             pass
         return root
-    if token_matches_branch(token, Tables.PRODUCTION[1]):
+    if token_matches_branch(Tables.PRODUCTION[1]):
         if token.value == '[':
             child = Node('(SYMBOL, [)', parent= root)
             token = scanner.get_next_token()
@@ -163,18 +179,20 @@ def var_declaration_prime_procedure(token):
         pass
 
 
-def fun_declaration_prime(token):
+def fun_declaration_prime():
+    global token
+
     procedure = 'Fun-declaration-prime'
     root = Node(procedure)
 
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
+    if token_matches_branch(Tables.PRODUCTION[procedure][0]):
         if token.value == '(':
             child = Node('(SYMBOL, ()', parent= root)
             token = scanner.get_next_token()
         else:
             pass
 
-        child = params_procedure(token)
+        child = params_procedure()
         child.parent = root
 
         if token.value == ')':
@@ -183,7 +201,7 @@ def fun_declaration_prime(token):
         else:
             pass
 
-        child = compound_stmt_procedure(token)
+        child = compound_stmt_procedure()
         child.parent = root
     
         return root
@@ -194,17 +212,18 @@ def fun_declaration_prime(token):
         pass
 
 
-def type_specifier_procedure(token):
+def type_specifier_procedure():
+    global token
     procedure = 'Type-specifier'
     root = Node(procedure)
 
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
+    if token_matches_branch(Tables.PRODUCTION[procedure][0]):
         if token.value == 'int':
             child = Node('(KEYWORD, int)', parent= root)
         else:
             pass
         return root
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][1]):
+    if token_matches_branch(Tables.PRODUCTION[procedure][1]):
         if token.value == 'void':
             child = Node('(KEYWORD, void)', parent= root)
         else:
@@ -217,11 +236,12 @@ def type_specifier_procedure(token):
         pass
 
 
-def params_procedure(token):
+def params_procedure():
+    global token
     procedure= 'Params'
     root = Node(procedure)
 
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
+    if token_matches_branch(Tables.PRODUCTION[procedure][0]):
         if token.value == 'int':
             child = Node('(KEYWORD, int)', parent= root)
             token = scanner.get_next_token()
@@ -234,15 +254,15 @@ def params_procedure(token):
         else:
             pass
         
-        child = param_prime_procedure(token)
+        child = param_prime_procedure()
         child.parent = root
 
         token = scanner.get_next_token()
-        child = param_list_procedure(token)
+        child = param_list_procedure()
         child.parent = root
 
         return root
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][1]):
+    if token_matches_branch(Tables.PRODUCTION[procedure][1]):
         if token.value == 'void':
             child = Node('(KEYWORD, void)', parent= root)
         else:
@@ -255,22 +275,24 @@ def params_procedure(token):
         pass
 
 
-def param_list_procedure(token):
+def param_list_procedure():
+    global token
+
     procedure = 'Param-list'
     root = Node(procedure)
 
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
+    if token_matches_branch(Tables.PRODUCTION[procedure][0]):
         if token.value == ',':
             child = Node('(SYMBOL, ,)', parent= root)
             token = scanner.get_next_token()
         else:
             pass
 
-        child = param_procedure(token)
+        child = param_procedure()
         child.parent = root
         
         token = scanner.get_next_token()
-        child = param_list_procedure(token)
+        child = param_list_procedure()
         child.parent = root
 
         return root
@@ -279,16 +301,18 @@ def param_list_procedure(token):
     return root
 
 
-def param_procedure(token):
+def param_procedure():
+    global token
+
     procedure = 'Param'
     root = Node(procedure)
 
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
-        child = declaration_initial_procedure(token)
+    if token_matches_branch(Tables.PRODUCTION[procedure][0]):
+        child = declaration_initial_procedure()
         child.parent = root
 
         token = scanner.get_next_token()
-        child = param_prime_procedure(token)
+        child = param_prime_procedure()
         child.parent = root
 
         return root
@@ -299,11 +323,13 @@ def param_procedure(token):
         pass
 
 
-def param_prime_procedure(token):
+def param_prime_procedure():
+    global token
+
     procedure = 'Param-prime'
     root = Node(procedure)
 
-    if token_matches_branch(token, Tables.PRODUCTION[procedure[0]]):
+    if token_matches_branch(Tables.PRODUCTION[procedure[0]]):
         if token.value == '[':
             child = Node('(SYMBOL, [)', parent= root)
             token = scanner.get_next_token()
@@ -323,22 +349,24 @@ def param_prime_procedure(token):
         pass
 
 
-def compound_stmt_procedure(token):
+def compound_stmt_procedure():
+    global token
+
     procedure = 'Compound-stmt'
     root = Node(procedure)
 
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
+    if token_matches_branch(Tables.PRODUCTION[procedure][0]):
         if token.value == '{':
             child = Node('(SYMBOL, {)', parent= root)
             token = scanner.get_next_token()
         else:
             pass
 
-        child = declaration_list_procedure(token)
+        child = declaration_list_procedure()
         child.parent = root
         
         token = scanner.get_next_token()
-        child = Statement_list_procedure(token)
+        child = Statement_list_procedure()
         child.parent = root
 
         token = scanner.get_next_token()
@@ -354,16 +382,18 @@ def compound_stmt_procedure(token):
         pass
 
 
-def Statement_list_procedure(token):
+def Statement_list_procedure():
+    global token
+
     procedure = 'Statement-list'
     root = Node(procedure)
 
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
-        child = statement_procedure(token)
+    if token_matches_branch(Tables.PRODUCTION[procedure][0]):
+        child = statement_procedure()
         child.parent = root
 
         token = scanner.get_next_token()
-        child = Statement_list_procedure(token)
+        child = Statement_list_procedure()
         child.parent = root
 
         return root
@@ -372,36 +402,38 @@ def Statement_list_procedure(token):
     return root
 
 
-def statement_procedure(token):
+def statement_procedure():
+    global token
+
     procedure = 'Statement'
     root = Node(procedure)
 
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
-        child = expression_stmt_procedure(token)
+    if token_matches_branch(Tables.PRODUCTION[procedure][0]):
+        child = expression_stmt_procedure()
         child.parent = root
 
         return root
 
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][1]):
-        child = compound_stmt_procedure(token)
+    if token_matches_branch(Tables.PRODUCTION[procedure][1]):
+        child = compound_stmt_procedure()
         child.parent = root
 
         return root
 
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][2]):
-        child = selection_stmt_procedure(token)
+    if token_matches_branch(Tables.PRODUCTION[procedure][2]):
+        child = selection_stmt_procedure()
         child.parent = root
 
         return root
 
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][3]):
-        child = iteration_stmt_procedure(token)
+    if token_matches_branch(Tables.PRODUCTION[procedure][3]):
+        child = iteration_stmt_procedure()
         child.parent = root
 
         return root
 
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][4]):
-        child = return_stmt_procedure(token)
+    if token_matches_branch(Tables.PRODUCTION[procedure][4]):
+        child = return_stmt_procedure()
         child.parent = root
 
         return root
@@ -412,12 +444,14 @@ def statement_procedure(token):
         pass
 
 
-def expression_stmt_procedure(token):
+def expression_stmt_procedure():
+    global token
+
     procedure = 'Expression-stmt'
     root = Node(procedure)
 
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
-        child = expression_procedure(token)
+    if token_matches_branch(Tables.PRODUCTION[procedure][0]):
+        child = expression_procedure()
         child.parent = root
 
         token = scanner.get_next_token()
@@ -426,7 +460,7 @@ def expression_stmt_procedure(token):
         else:
             pass
         return root
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][1]):
+    if token_matches_branch(Tables.PRODUCTION[procedure][1]):
         if token.value == 'break':
             child = Node('(KEYWORD, break)', parent= root)
             token = scanner.get_next_token()
@@ -438,7 +472,7 @@ def expression_stmt_procedure(token):
         else:
             pass
         return root
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][2]):
+    if token_matches_branch(Tables.PRODUCTION[procedure][2]):
         if token.value == ';':
             child = Node('(SYMBOL, ;)', parent= root)
         else:
@@ -451,11 +485,13 @@ def expression_stmt_procedure(token):
         pass
 
 
-def selection_stmt_procedure(token):
+def selection_stmt_procedure():
+    global token 
+
     procedure = 'Selection-stmt'
     root = Node(procedure)
 
-    if token_matches_branch(token, Tables.PRODUCTION[procedure][0]):
+    if token_matches_branch(Tables.PRODUCTION[procedure][0]):
         if token.value == 'if':
             child = Node('(KEYWORD, if)', parent= root)
             token = scanner.get_next_token()
@@ -468,7 +504,7 @@ def selection_stmt_procedure(token):
         else:
             pass
 
-        child = expression_procedure(token)
+        child = expression_procedure()
         child.parent = root
 
         token = scanner.get_next_token()
@@ -478,11 +514,11 @@ def selection_stmt_procedure(token):
         else:
             pass
 
-        child = statement_stmt_procedure(token)
+        child = statement_stmt_procedure()
         child.parent = root
 
         token = scanner.get_next_token()
-        child = else_stmt_procedure(token)
+        child = else_stmt_procedure()
         child.parent = root
 
         return root
@@ -492,11 +528,9 @@ def selection_stmt_procedure(token):
     else:
         pass
 
-scanner.openFile('input.txt')
 
 
-token = scanner.get_next_token()
-tree = program_procedure(token)
+tree = program_procedure()
 
 scanner.close_file()
 
