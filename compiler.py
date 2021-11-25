@@ -28,6 +28,7 @@ def token_matches_branch(branch):
                 return True
             if 'EPSILON' not in Tables.FIRST[value]:
                 return False
+    return True
 
 
 def program_procedure():
