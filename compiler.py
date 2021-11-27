@@ -180,7 +180,7 @@ def var_declaration_prime_procedure():
         pass
 
 
-def fun_declaration_prime():
+def fun_declaration_prime_procedure():
     global token
 
     procedure = 'Fun-declaration-prime'
