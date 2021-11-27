@@ -515,7 +515,7 @@ def selection_stmt_procedure():
         else:
             pass
 
-        child = statement_stmt_procedure()
+        child = statement_procedure()
         child.parent = root
 
         token = scanner.get_next_token()
@@ -598,7 +598,7 @@ def iteration_stmt_procedure():
         child = expression_procedure()
         child.parent = root
 
-        token = scanner.get_next_value()
+        token = scanner.get_next_token()
         if token.value == ')':
             child = Node('(SYMBOL, ))', parent= root)
         else:
