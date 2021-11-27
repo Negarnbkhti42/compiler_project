@@ -367,7 +367,7 @@ def compound_stmt_procedure():
         child.parent = root
         
         token = scanner.get_next_token()
-        child = Statement_list_procedure()
+        child = statement_list_procedure()
         child.parent = root
 
         token = scanner.get_next_token()
@@ -383,7 +383,7 @@ def compound_stmt_procedure():
         pass
 
 
-def Statement_list_procedure():
+def statement_list_procedure():
     global token
 
     procedure = 'Statement-list'
@@ -394,7 +394,7 @@ def Statement_list_procedure():
         child.parent = root
 
         token = scanner.get_next_token()
-        child = Statement_list_procedure()
+        child = statement_list_procedure()
         child.parent = root
 
         return root
@@ -530,6 +530,170 @@ def selection_stmt_procedure():
         pass
 
 
+def else_stmt_procedure():
+    global token
+
+    procedure = 'Else-stmt'
+    root = Node(procedure)
+
+    if token_matches_branch(Tables.PRODUCTION[procedure][0]):
+        if token.value == 'endif':
+            child = Node('(KEYWORD, endif)', parent= root)
+        else:
+            pass
+
+        return root
+    if token_matches_branch(Tables.PRODUCTION[procedure][1]):
+        if token.value == 'else':
+            child = Node('(KEYWORD, else)', parent= root)
+            token = scanner.get_next_token()
+        else:
+            pass
+
+        child = statement_procedure()
+        child.parent = root
+
+        token = scanner.get_next_token()
+        if token.value == 'endif':
+            child = Node('(KEYWORD, endif)', parent= root)
+        else:
+            pass
+        return root
+    
+    if token in Tables.FOLLOW[procedure]:
+        pass
+    else:
+        pass
+
+
+def iteration_stmt_procedure():
+    global token
+
+    procedure = 'Iteration-stmt'
+    root = Node(procedure)
+
+    if token_matches_branch(Tables.PRODUCTION[procedure][0]):
+        if token.value == 'repeat':
+            child = Node('(KEYWORD, repeat)', parent= root)
+            token = scanner.get_next_token()
+        else:
+            pass
+
+        child = statement_procedure()
+        child.parent = root
+
+        token = scanner.get_next_token()
+        if token.value == 'until':
+            child = Node('(KEYWORD, until)', parent= root)
+            token = scanner.get_next_token()
+        else:
+            pass
+
+        if token.value == '(':
+            child = Node('(SYMBOL, ()', parent= root)
+            token = scanner.get_next_token()
+        else:
+            pass
+
+        child = expression_procedure()
+        child.parent = root
+
+        token = scanner.get_next_value()
+        if token.value == ')':
+            child = Node('(SYMBOL, ))', parent= root)
+        else:
+            pass
+
+        return root
+    
+    if token in Tables.FOLLOW[procedure]:
+        pass
+    else:
+        pass
+
+
+def return_stmt_procedure():
+    global token
+
+    procedure = 'Return-stmt'
+    root = Node(procedure)
+
+    if token_matches_branch(Tables.PRODUCTION[procedure][0]):
+        if token.value == 'return':
+            child = Node('(KEYWORD, return)', parent= root)
+            token = scanner.get_next_token()
+        else:
+            pass
+
+        child = return_stmt_prime_procedure()
+        child.parent = root
+
+        return root
+
+    if token in Tables.FOLLOW[procedure]:
+        pass
+    else:
+        pass
+
+
+def return_stmt_prime_procedure():
+    global token
+
+    procedure = 'Return-stmt-prime'
+    root = Node(procedure)
+
+    if token_matches_branch(Tables.PRODUCTION[procedure][0]):
+        if token.value == ';':
+            child = Node('(SYMBOL, ;)', parent= root)
+        else:
+            pass
+
+        return root
+    if token_matches_branch(Tables.PRODUCTION[procedure][1]):
+        child = expression_procedure()
+        child.parent = root
+
+        token = scanner.get_next_token()
+        if token.value == ';':
+            child = Node('(SYMBOL, ;)', parent= root)
+        else:
+            pass
+
+        return root
+
+    if token in Tables.FOLLOW[procedure]:
+        pass
+    else:
+        pass
+
+
+def expression_procedure():
+    global token
+
+    procedure = 'Expression'
+    root = Node(procedure)
+
+    if token_matches_branch(Tables.PRODUCTION[procedure][0]):
+        child = simple_expression_zegond_procedure()
+        child.parent = root
+
+        return root
+    if token_matches_branch(Tables.PRODUCTION[procedure][1]):
+        if token.type == 'ID':
+            child = Node(f"(ID, {token.value})", parent= root)
+            token = scanner.get_next_token()
+        else:
+            pass
+
+        child = b_procedure()
+        child.parent = root
+
+        return root
+    
+    if token in Tables.FOLLOW[procedure]:
+        pass
+    else:
+        pass
 
 tree = program_procedure()
 
