@@ -37,10 +37,9 @@ class Diagram:
             return True
         return False
 
+
 def is_terminal(phrase):
     return phrase not in Tables.PRODUCTION
-
-
 
 
 token = scanner.get_next_token()
@@ -48,7 +47,7 @@ current_state = 'Program'
 
 if token.value in Tables.FIRST[current_state] or 'EPSILON' in Tables.FIRST[current_state]:
     root = Node(current_state)
-    state = Diagram(root.name)
+    state = Diagram(current_state)
 
 
 while True:
@@ -59,6 +58,7 @@ while True:
         break
 
     if is_terminal(current_state):
+
         if token.value == current_state or token.type == current_state:
             # matches. move both state and token
             child = Node(f"({token.type}, {token.value})", parent= root)
@@ -67,22 +67,27 @@ while True:
                 state = STATE_STACK.pop()
                 root = root.parent
         else:
-            # missing token. move state without changing the token
-            if not state.move_forward():
-                state = STATE_STACK.pop()
-                root = root.parent
+            # missing token. change token without moving state
+            token = scanner.get_next_token()
+
     else:
+
         if token in Tables.FIRST[current_state] or 'EPSILON' in Tables.FIRST[current_state]:
             state = Diagram(current_state)
             child = Node(current_state, parent= root)
             root = child
+
         else:
+
             if token in Tables.FOLLOW[current_state]:
                 # missing procedure error. move state without changing the token
-                pass
+                if not state.move_forward():
+                    state = STATE_STACK.pop()
+                    root = root.parent
+
             else:
                 # illegal procedure error. don't move state and change token
-                pass
+                token = scanner.get_next_token()
 
 scanner.close_file()
 
