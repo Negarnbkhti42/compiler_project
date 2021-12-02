@@ -11,8 +11,9 @@ from anytree import Node, RenderTree
 
 
 scanner.openFile('input.txt')
+syntax_errors = []
 
-STATE_STACK = []
+STATE_STACK = [] 
 token = ''
 state = None
 
@@ -25,8 +26,21 @@ class Diagram:
 
     def get_branch(self):
         for i in range(len(Tables.PRODUCTION[self.procedure])):
-            if True:
-                return i
+            for j in range(len(Tables.PRODUCTION[self.procedure][i])):
+                komaki = Tables.PRODUCTION[self.procedure][i][j]
+                if komaki == 'EPSILON':
+                    return i
+                if is_terminal(komaki):
+                    if token.value == komaki or token.type == komaki:
+                        return i
+                    else:
+                        break
+                else:
+                    if token.value in Tables.FIRST[komaki] or token.type in Tables.FIRST[komaki]:
+                        return i
+                    elif 'EPSILON' not in Tables.FIRST[komaki]:
+                        break
+
 
     def get_value(self):
         return Tables.PRODUCTION[self.procedure][self.branch][self.state]
@@ -43,19 +57,11 @@ def is_terminal(phrase):
 
 
 token = scanner.get_next_token()
-current_state = 'Program'
+state = Diagram('Program')
+root = None
 
-if token.value in Tables.FIRST[current_state] or 'EPSILON' in Tables.FIRST[current_state]:
-    root = Node(current_state)
-    state = Diagram(current_state)
-
-
-while True:
+while token.value != '$':
     current_state = state.get_value()
-
-    if token.value =='$' and current_state != '$':
-        # unexpected eof error
-        break
 
     if is_terminal(current_state):
 
@@ -67,28 +73,44 @@ while True:
                 state = STATE_STACK.pop()
                 root = root.parent
         else:
-            # missing token. change token without moving state
-            token = scanner.get_next_token()
+            # missing token. don't change token and move state
+            syntax_errors.append(f"#{scanner.line_num} : syntax error, missing {current_state}")
+            if not state.move_forward():
+                state = STATE_STACK.pop()
+                root = root.parent
 
-    else:
-
-        if token in Tables.FIRST[current_state] or 'EPSILON' in Tables.FIRST[current_state]:
+    else: # non-terminal state
+        if token.value in Tables.FIRST[current_state] or token.type in Tables.FIRST[current_state] or 'EPSILON' in Tables.FIRST[current_state]:
+            STATE_STACK.append(state)
             state = Diagram(current_state)
             child = Node(current_state, parent= root)
             root = child
 
         else:
-
             if token in Tables.FOLLOW[current_state]:
                 # missing procedure error. move state without changing the token
+                syntax_errors.append(f"#{scanner.line_num} : syntax error, missing {current_state}")
                 if not state.move_forward():
                     state = STATE_STACK.pop()
                     root = root.parent
 
             else:
                 # illegal procedure error. don't move state and change token
+                syntax_errors.append(f"#{scanner.line_num} : syntax error, illegal {token.type if token.type == 'ID' or token.type == 'NUM' else token.value}")
                 token = scanner.get_next_token()
+            
+            
+if current_state !="$":
+    syntax_errors.append(f"#{scanner.line_num} : syntax error, Unexpected EOF")
+else:
+    lastNode=Node("$", parent=root)
+
+
+with open('syntax_errors.txt', 'w', newline=) as errors:
+    for error in syntax_errors:
+        errors.write(error)
+
+with open('parse_tree.txt', 'w') as tree:
+    tree.write(RenderTree(root))
 
 scanner.close_file()
-
-
