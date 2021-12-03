@@ -69,13 +69,13 @@ while token.value != '$':
             # matches. move both state and token
             child = Node(f"({token.type}, {token.value})", parent= root)
             token = scanner.get_next_token()
-            if not state.move_forward():
+            while not state.move_forward():
                 state = STATE_STACK.pop()
                 root = root.parent
         else:
             # missing token. don't change token and move state
             syntax_errors.append(f"#{scanner.line_num} : syntax error, missing {current_state}")
-            if not state.move_forward():
+            while not state.move_forward():
                 state = STATE_STACK.pop()
                 root = root.parent
 
@@ -90,7 +90,7 @@ while token.value != '$':
             if token in Tables.FOLLOW[current_state]:
                 # missing procedure error. move state without changing the token
                 syntax_errors.append(f"#{scanner.line_num} : syntax error, missing {current_state}")
-                if not state.move_forward():
+                while not state.move_forward():
                     state = STATE_STACK.pop()
                     root = root.parent
 
@@ -110,7 +110,11 @@ with open('syntax_errors.txt', 'w') as errors:
     for error in syntax_errors:
         errors.write(error + "\n")
 
-with open('parse_tree.txt', 'w') as tree:
-    tree.write(RenderTree(root))
+for pre, fill, node in RenderTree(root):
+        print("%s%s" % (pre, node.name))
+
+# with open('parse_tree.txt', 'w') as tree:
+#     for pre, fill, node in RenderTree(root):
+#         tree.write("%s%s" % (pre, node.name))
 
 scanner.close_file()
