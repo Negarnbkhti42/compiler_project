@@ -1,9 +1,7 @@
 PA1/*
 input.txt
-tokens.txt
-lexical_errors.txt
-symbol_table.txt
+parse_tree.txt
+syntax_errors.txt
 test.py
 compiler_1.zip
 ProgrammingAssignment1.zip
-recursive.txt

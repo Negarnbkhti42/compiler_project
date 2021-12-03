@@ -106,9 +106,9 @@ else:
     lastNode=Node("$", parent=root)
 
 
-with open('syntax_errors.txt', 'w', newline=) as errors:
+with open('syntax_errors.txt', 'w') as errors:
     for error in syntax_errors:
-        errors.write(error)
+        errors.write(error + "\n")
 
 with open('parse_tree.txt', 'w') as tree:
     tree.write(RenderTree(root))
