@@ -41,6 +41,8 @@ class Diagram:
                     elif 'EPSILON' not in Tables.FIRST[komaki]:
                         break
 
+        return len(Tables.PRODUCTION[self.procedure]) - 1
+
 
     def get_value(self):
         return Tables.PRODUCTION[self.procedure][self.branch][self.state]
@@ -64,7 +66,6 @@ while token.value != '$':
     current_state = state.get_value()
 
     if is_terminal(current_state):
-
         if token.value == current_state or token.type == current_state:
             # matches. move both state and token
             child = Node(f"({token.type}, {token.value})", parent= root)
