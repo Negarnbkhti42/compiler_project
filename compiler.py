@@ -113,7 +113,7 @@ while True:
                     token = scanner.get_next_token()
  
 
-with open('syntax_errors.txt', 'w') as errors:
+with open('syntax_errors.txt', 'w', encoding= "utf-8") as errors:
     if len(syntax_errors)==0:
         errors.write("There is no syntax error.")
     else:
