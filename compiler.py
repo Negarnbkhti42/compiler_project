@@ -87,29 +87,35 @@ while True:
             move_to_next_state()
         else:
             # missing token. don't change token and move state
-            syntax_errors.append(f"#{scanner.line_num} : syntax error, missing {current_state}")
+            syntax_errors.append(f"#{token.line} : syntax error, missing {current_state}")
             move_to_next_state()
 
     else: # non-terminal state
-        if token.value in Tables.FIRST[current_state] or token.type in Tables.FIRST[current_state] or 'EPSILON' in Tables.FIRST[current_state]:
+        if token.value in Tables.FIRST[current_state] or token.type in Tables.FIRST[current_state]:
             STATE_STACK.append(state)
             state = Diagram(current_state)
             child = Node(current_state, parent= root)
             root = child
 
         else:
-            if token in Tables.FOLLOW[current_state]:
+            if token.value in Tables.FOLLOW[current_state] or token.type in Tables.FOLLOW[current_state]:
                 # missing procedure error. move state without changing the token
-                syntax_errors.append(f"#{scanner.line_num} : syntax error, missing {current_state}")
-                move_to_next_state()
+                if 'EPSILON' in Tables.FIRST[current_state]:
+                    STATE_STACK.append(state)
+                    state = Diagram(current_state)
+                    child = Node(current_state, parent= root)
+                    root = child
+                else:    
+                    syntax_errors.append(f"#{token.line} : syntax error, missing {current_state}")
+                    move_to_next_state()
 
             else:
                 # illegal procedure error. don't move state and change token
                 if token.value == '$':
-                    syntax_errors.append(f"#{scanner.line_num} : syntax error, Unexpected EOF")
+                    syntax_errors.append(f"#{token.line} : syntax error, Unexpected EOF")
                     break
                 else:
-                    syntax_errors.append(f"#{scanner.line_num} : syntax error, illegal {token.type if token.type == 'ID' or token.type == 'NUM' else token.value}")
+                    syntax_errors.append(f"#{token.line} : syntax error, illegal {token.type if token.type == 'ID' or token.type == 'NUM' else token.value}")
                     token = scanner.get_next_token()
  
 
@@ -121,6 +127,9 @@ with open('syntax_errors.txt', 'w', encoding= "utf-8") as errors:
             errors.write(error + "\n")
 
 with open('parse_tree.txt', 'w', encoding= "utf-8") as tree:
+    while root.parent:
+        root = root.parent
+
     for pre, fill, node in RenderTree(root):
         tree.write("%s%s" % (pre, node.name) + "\n")
 
