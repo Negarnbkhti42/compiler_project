@@ -8,6 +8,7 @@ group members:
 import scanner
 import Tables
 from anytree import Node, RenderTree
+import code_gen
 
 
 scanner.openFile('input.txt')
@@ -71,7 +72,10 @@ def move_to_next_state():
 while True:
     current_state = state.get_value()
 
-    if current_state == 'EPSILON':
+    if current_state[0]=="#":
+        code_gen.generate_code(current_state, token)
+        
+    elif current_state == 'EPSILON':
         Child = Node('epsilon', parent= root)
         move_to_next_state()
         
