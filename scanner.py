@@ -1,6 +1,14 @@
+class Token:
+
+    def __init__(self, valid, type, value, line):
+        self.valid = valid
+        self.type = type
+        self.value = value
+        self.line = line
+
 LETTER = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 DIGIT = set("0123456789")
-KEYWORD = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return']
+KEYWORD = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return', 'endif']
 SYMBOL = [';', ':', ',', '[', ']', '{', '}', '(', ')', '+', '-', '*', '=', '<']
 COMMENT = ['/', '*', '//', '/*', '*/']
 WHITESPACE = set(" \n\r\v\t\f")
@@ -79,12 +87,12 @@ def skip_whitespace_and_comment():
 
                     input_char = get_char()
                 if input_char == '':
-                    return (False, 'Unclosed comment', value, start_line)
+                    return Token(False, 'Unclosed comment', value, start_line)
             else:
                 move_pointer(-1)
                 if value == '/\n':
                     move_pointer(-1)
-                return (False, 'Invalid input', value[0])
+                return Token(False, 'Invalid input', value[0], line_num)
         else:
             return value
 
@@ -99,22 +107,22 @@ def get_id(value):
             value += input_char
         elif input_char in SYMBOL or input_char in WHITESPACE:
             move_pointer(-1)
-            return (True, 'KEYWORD' if value in KEYWORD else 'ID', value)
+            return Token(True, 'KEYWORD' if value in KEYWORD else 'ID', value, line_num)
         elif input_char == COMMENT[0]:
             input_char += get_char()
 
             if input_char in COMMENT:
                 move_pointer(-2)
-                return (True, 'KEYWORD' if value in KEYWORD else 'ID', value)
+                return Token(True, 'KEYWORD' if value in KEYWORD else 'ID', value, line_num)
             else:
                 value += input_char[0]
                 move_pointer(-1)
-                return (False, 'Invalid input', value)
+                return Token(False, 'Invalid input', value, line_num)
         else:
             value += input_char
-            return (False, 'Invalid input', value)
+            return Token(False, 'Invalid input', value, line_num)
         input_char = get_char()
-    return (True, 'KEYWORD' if value in KEYWORD else 'ID', value)
+    return Token(True, 'KEYWORD' if value in KEYWORD else 'ID', value, line_num)
 
 
 def get_num(value):
@@ -129,11 +137,11 @@ def get_num(value):
 
     if input_char in LETTER:
         value += input_char
-        return (False, 'Invalid number', value)
+        return Token(False, 'Invalid number', value, line_num)
 
     if input_char != '':
         move_pointer(-1)
-    return (True, 'NUM', value)
+    return Token(True, 'NUM', value, line_num)
 
 
 def get_symbol(value):
@@ -144,29 +152,29 @@ def get_symbol(value):
 
         if input_char == "=":
             value += input_char
-            return (True, 'SYMBOL', value)  # ==
+            return Token(True, 'SYMBOL', value, line_num)  # ==
         if input_char in LETTER or input_char in DIGIT or input_char in WHITESPACE or input_char in COMMENT:
             move_pointer(-1)
-            return (True, 'SYMBOL', value)  # =
+            return Token(True, 'SYMBOL', value, line_num)  # =
         value += input_char
-        return (False, 'Invalid input', value)
+        return Token(False, 'Invalid input', value, line_num)
     elif value == '*':
         input_char = get_char()
 
         if input_char == '/':
             value += input_char
-            return (False, 'Unmatched comment', value)
+            return Token(False, 'Unmatched comment', value, line_num)
         elif input_char in LETTER or input_char in DIGIT or input_char in WHITESPACE:
             move_pointer(-1)
-            return (True, 'SYMBOL', value)
+            return Token(True, 'SYMBOL', value, line_num)
         else:
             value += input_char
-            return (False, 'Invalid input', value)
+            return Token(False, 'Invalid input', value, line_num)
     else:
-        return (True, 'SYMBOL', value)  # harchizi joz   ==  va  =
+        return Token(True, 'SYMBOL', value, line_num)  # harchizi joz   ==  va  =
 
 
-def get_next_token():
+def get_new_token():
     ''' the ultimate function for finding tokens '''
 
     value = skip_whitespace_and_comment()
@@ -175,7 +183,7 @@ def get_next_token():
         return value
 
     if value == '':
-        return None
+        return Token(True, 'EOF', '$', line_num)
 
     # ID/KEYWORD////////////////////
     if value in LETTER:
@@ -191,4 +199,10 @@ def get_next_token():
     if value in SYMBOL:
         return get_symbol(value)
 
-    return (False, 'Invalid input', value)
+    return Token(False, 'Invalid input', value, line_num)
+
+def get_next_token():
+    while True:
+        token = get_new_token()
+        if token.valid:
+            return token
