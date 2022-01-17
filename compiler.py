@@ -73,7 +73,7 @@ while True:
     current_state = state.get_value()
 
     if current_state[0]=="#":
-        code_gen.generate_code(current_state, token)
+        code_gen.code_gen(current_state, token)
         
     elif current_state == 'EPSILON':
         Child = Node('epsilon', parent= root)
