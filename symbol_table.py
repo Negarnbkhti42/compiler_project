@@ -1,20 +1,23 @@
 SYMBOL_TABLE=[]
 
+ADDRESS = 100
 
 class Symbol:
     def __init__(self, id, type, size=0):
+        global ADDRESS
+        
         self.id = id
-        self.address = 0 #get adress from table
+        self.address = ADDRESS
         self.type=type
         self.array_size=size
 
-symbol_1 = Symbol('a', 'int')
-SYMBOL_TABLE.append(symbol_1)
+        if(type == 'array'):
+            ADDRESS += size * 4
+        else:
+            ADDRESS += 4
 
-symbol_2 = Symbol('arr', 'array', 4)
-SYMBOL_TABLE.append(symbol_2)
 
 def find_addr(id):
-    for symbol in SYMBOL_TABLE:
+    for symbol in SYMBOL_TABLE[::-1]:
         if symbol.id == id:
             return symbol.address

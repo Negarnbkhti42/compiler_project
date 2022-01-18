@@ -8,7 +8,6 @@ SYMBOL_TABLE={"a": {
     "address":500,
     "size":1
     }
-
 }
 
 operations_dict={ "+":"ADD", "-":"SUB", "*":"MULT", "=":"ASSIGN", "<":"LT", "==":"EQ" }
@@ -42,19 +41,33 @@ def execute_operation():
     operand_2 = SEMANTIC_STACK.pop()
     operator = SEMANTIC_STACK.pop()
     operand_1 = SEMANTIC_STACK.pop()
-    result = 0 #TODO: get_temporary_variable
+    result = get_temp()
     PROGRAM_BLOCK.append(f"({operator}, {operand_1}, {operand_2}, {result})")
     SEMANTIC_STACK.append(result)
 
 def addop(operator):
     SEMANTIC_STACK.append(operations_dict[operator])
 
+def declare(id):
+    SEMANTIC_STACK.append(id)
+
+def declare_int():
+    id = SEMANTIC_STACK.pop()
+    symbol_table.SYMBOL_TABLE.append(symbol_table.Symbol(id, 'int'))
+
+def declare_arr(num):
+    id = SEMANTIC_STACK.pop()
+    symbol_table.SYMBOL_TABLE.append(symbol_table.Symbol(id,'array', size= num))
+
+def declare_func():
+    id = SEMANTIC_STACK.pop()
+    symbol_table.SYMBOL_TABLE.append(symbol_table.Symbol(id, 'func'))
 
 ACTION_SIGN={
-    "#declare":'',
-    '#declare_int':'',
-    '#declare_arr':'',
-    '#declare_func':'',
+    "#declare": declare,
+    '#declare_int':declare_int,
+    '#declare_arr':declare_arr,
+    '#declare_func':declare_func,
     "#pid": pid,
     "#pnum": pnum,
     "#save": save,
@@ -75,7 +88,7 @@ def code_gen(action, token=None):
 
 def get_temp():
     temp = 500
-    while(temp in LIVE_TEMPORARIES):
+    while temp in LIVE_TEMPORARIES:
         temp +=4
 
     LIVE_TEMPORARIES.append(temp)

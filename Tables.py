@@ -1,5 +1,5 @@
 PRODUCTION = {
-    'Program': [['Declaration-list', '$']],
+    'Program': [['#save', 'Declaration-list', '$']],
     'Declaration-list' : [['Declaration', 'Declaration-list'], ['EPSILON']],
     'Declaration' : [['Declaration-initial', 'Declaration-prime']],
     'Declaration-initial' :  [['Type-specifier', '#declare', 'ID']],
@@ -16,7 +16,7 @@ PRODUCTION = {
     'Statement' : [['Expression-stmt'], ['Compound-stmt'], ['Selection-stmt'], ['Iteration-stmt'], ['Return-stmt']],
     'Expression-stmt' : [['Expression', ';'], ['break', ';'], [';']],
     'Selection-stmt' : [['if', '(', 'Expression', ')', '#save', 'Statement', 'Else-stmt']],
-    'Else-stmt' : [['endif'], ['else', 'Statement', 'endif']],
+    'Else-stmt' : [['endif'], ['#save', '#jpf_save', 'else', 'Statement', 'endif']],
     'Iteration-stmt' : [['repeat', '#save', 'Statement', 'until', '(', 'Expression', ')', '#jpf_save']],
     'Return-stmt' : [['return']],
     'Return-stmt-prime' : [[';'], ['Expression', ';']],
