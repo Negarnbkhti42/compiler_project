@@ -1,5 +1,8 @@
+import symbol_table
+
 SEMANTIC_STACK=[]
 PROGRAM_BLOCK=[]
+LIVE_TEMPORARIES=[]
 
 SYMBOL_TABLE={"a": {
     "address":500,
@@ -25,6 +28,7 @@ def assign():
     A1 = SEMANTIC_STACK.pop()
     R = SEMANTIC_STACK.pop()
     PROGRAM_BLOCK.append(f"(ASSIGN, {A1}, {R})")
+    update_temp([A1, R])
 
 def jump(destination):
     PROGRAM_BLOCK.append(f"(JP, {destination}, , )")
@@ -62,8 +66,22 @@ ACTION_SIGN={
 }
 
 
-def code_gen(action, token):
+def code_gen(action, token=None):
     if token:
         ACTION_SIGN[action](token)
     else:
         ACTION_SIGN[action]()
+
+
+def get_temp():
+    temp = 500
+    while(temp in LIVE_TEMPORARIES):
+        temp +=4
+
+    LIVE_TEMPORARIES.append(temp)
+    return temp
+
+def update_temp(addr):
+    for i in addr:
+        if i in LIVE_TEMPORARIES:
+            LIVE_TEMPORARIES.remove(i)
