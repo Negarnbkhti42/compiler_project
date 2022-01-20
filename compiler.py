@@ -31,20 +31,21 @@ class Diagram:
         for i in range(len(Tables.PRODUCTION[self.procedure])):
             for j in range(len(Tables.PRODUCTION[self.procedure][i])):
                 komaki = Tables.PRODUCTION[self.procedure][i][j]
-                if komaki == 'EPSILON':
-                    return i
-                if is_terminal(komaki):
-                    if token.value == komaki or token.type == komaki:
+                if komaki[0] != '#':
+                    if komaki == 'EPSILON':
                         return i
+                    if is_terminal(komaki):
+                        if token.value == komaki or token.type == komaki:
+                            return i
+                        else:
+                            break
                     else:
-                        break
-                else:
-                    if token.value in Tables.FIRST[komaki] or token.type in Tables.FIRST[komaki]:
-                        return i
-                    elif 'EPSILON' not in Tables.FIRST[komaki]:
-                        break
-                    elif j == len(Tables.PRODUCTION[self.procedure][i]) - 1:
-                        return i
+                        if token.value in Tables.FIRST[komaki] or token.type in Tables.FIRST[komaki]:
+                            return i
+                        elif 'EPSILON' not in Tables.FIRST[komaki]:
+                            break
+                        elif j == len(Tables.PRODUCTION[self.procedure][i]) - 1:
+                            return i
 
     def get_value(self):
         return Tables.PRODUCTION[self.procedure][self.branch][self.state]
@@ -74,13 +75,15 @@ while True:
 
     if current_state[0]=="#":
         code_gen.code_gen(current_state, token)
-        
-    elif current_state == 'EPSILON':
+        move_to_next_state()
+        continue
+
+    if current_state == 'EPSILON':
         Child = Node('epsilon', parent= root)
         move_to_next_state()
-        
 
-    elif is_terminal(current_state):
+
+    if is_terminal(current_state):
         if token.value == current_state or token.type == current_state:
             # matches. move both state and token
             if token.value == '$':
@@ -123,18 +126,20 @@ while True:
                     token = scanner.get_next_token()
  
 
-with open('syntax_errors.txt', 'w', encoding= "utf-8") as errors:
-    if len(syntax_errors)==0:
-        errors.write("There is no syntax error.")
-    else:
-        for error in syntax_errors:
-            errors.write(error + "\n")
+# with open('syntax_errors.txt', 'w', encoding= "utf-8") as errors:
+#     if len(syntax_errors)==0:
+#         errors.write("There is no syntax error.")
+#     else:
+#         for error in syntax_errors:
+#             errors.write(error + "\n")
 
-with open('parse_tree.txt', 'w', encoding= "utf-8") as tree:
-    while root.parent:
-        root = root.parent
+# with open('parse_tree.txt', 'w', encoding= "utf-8") as tree:
+#     while root.parent:
+#         root = root.parent
 
-    for pre, fill, node in RenderTree(root):
-        tree.write("%s%s" % (pre, node.name) + "\n")
+#     for pre, fill, node in RenderTree(root):
+#         tree.write("%s%s" % (pre, node.name) + "\n")
+
+code_gen.write_output()
 
 scanner.close_file()

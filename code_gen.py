@@ -1,7 +1,7 @@
 import symbol_table
 
 SEMANTIC_STACK=[]
-PROGRAM_BLOCK=[]
+PROGRAM_BLOCK=['main_jump']
 LIVE_TEMPORARIES=[]
 
 SYMBOL_TABLE={"a": {
@@ -10,7 +10,7 @@ SYMBOL_TABLE={"a": {
     }
 }
 
-operations_dict={ "+":"ADD", "-":"SUB", "*":"MULT", "=":"ASSIGN", "<":"LT", "==":"EQ" }
+operations_dict={ "+":"ADD", "-":"SUB", "*":"MULT", "=":"ASSIGN", "<":"LT", "==":"EQ"  }
 
 
 def pid(id):
@@ -18,26 +18,33 @@ def pid(id):
 
 def pnum(num):
     SEMANTIC_STACK.append(f"#{num}")
-    
-def save():
+
+def save(param=None):
     SEMANTIC_STACK.append(len(PROGRAM_BLOCK))
     PROGRAM_BLOCK.append('JPF')
 
-def assign():
+def assign(param=None):
     A1 = SEMANTIC_STACK.pop()
     R = SEMANTIC_STACK.pop()
     PROGRAM_BLOCK.append(f"(ASSIGN, {A1}, {R})")
     update_temp([A1, R])
 
-def jump(destination):
+def jump(param=None):
+    destination = SEMANTIC_STACK.pop()
     PROGRAM_BLOCK.append(f"(JP, {destination}, , )")
 
-def jump_false():
+def jump_false(param=None):
     value = SEMANTIC_STACK.pop()
     address = SEMANTIC_STACK.pop()
     PROGRAM_BLOCK[address] = f"(JPF, {value}, {len(PROGRAM_BLOCK)})"
 
-def execute_operation():
+def jump_false_save(param=None):
+    value = SEMANTIC_STACK.pop()
+    address = SEMANTIC_STACK.pop()
+    PROGRAM_BLOCK[address] = f"(JPF, {value}, {len(PROGRAM_BLOCK) + 1})"
+    SEMANTIC_STACK.append(len(PROGRAM_BLOCK))
+
+def execute_operation(param=None):
     operand_2 = SEMANTIC_STACK.pop()
     operator = SEMANTIC_STACK.pop()
     operand_1 = SEMANTIC_STACK.pop()
@@ -51,7 +58,7 @@ def addop(operator):
 def declare(id):
     SEMANTIC_STACK.append(id)
 
-def declare_int():
+def declare_int(param=None):
     id = SEMANTIC_STACK.pop()
     symbol_table.SYMBOL_TABLE.append(symbol_table.Symbol(id, 'int'))
 
@@ -59,9 +66,14 @@ def declare_arr(num):
     id = SEMANTIC_STACK.pop()
     symbol_table.SYMBOL_TABLE.append(symbol_table.Symbol(id,'array', size= num))
 
-def declare_func():
+def declare_func(param=None):
     id = SEMANTIC_STACK.pop()
     symbol_table.SYMBOL_TABLE.append(symbol_table.Symbol(id, 'func'))
+    if id == 'main':
+        main_jump()
+
+def main_jump(param=None):
+    PROGRAM_BLOCK[0] = f"(JP, {len(PROGRAM_BLOCK)}, , )"
 
 ACTION_SIGN={
     "#declare": declare,
@@ -74,16 +86,14 @@ ACTION_SIGN={
     "#assign": assign,
     "#op_exec": execute_operation,
     "#jp": jump,
-    "#jpf_save": jump_false,
+    "#jpf": jump_false,
+    "#jpf_save": jump_false_save,
     "#addop": addop
 }
 
 
 def code_gen(action, token=None):
-    if token:
-        ACTION_SIGN[action](token)
-    else:
-        ACTION_SIGN[action]()
+    ACTION_SIGN[action](token)
 
 
 def get_temp():
@@ -98,3 +108,9 @@ def update_temp(addr):
     for i in addr:
         if i in LIVE_TEMPORARIES:
             LIVE_TEMPORARIES.remove(i)
+
+
+def write_output():
+    with open('output.txt', 'w', encoding='utf-8') as output:
+        for idx, line in enumerate(PROGRAM_BLOCK):
+            output.write(f"{idx}\t{line}")
