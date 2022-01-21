@@ -31,7 +31,7 @@ def assign(param=None):
 
 def jump(param=None):
     address = SEMANTIC_STACK.pop()
-    PROGRAM_BLOCK[address] = (f"(JP, {destination}, , )")
+    PROGRAM_BLOCK[address] = (f"(JP, {len(PROGRAM_BLOCK)}, , )")
 
 def jump_false(param=None):
     value = SEMANTIC_STACK.pop()
