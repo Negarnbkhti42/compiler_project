@@ -16,7 +16,7 @@ PRODUCTION = {
     'Statement' : [['Expression-stmt'], ['Compound-stmt'], ['Selection-stmt'], ['Iteration-stmt'], ['Return-stmt']],
     'Expression-stmt' : [['Expression', ';'], ['break', ';'], [';']],
     'Selection-stmt' : [['if', '(', 'Expression', ')', '#save', 'Statement', 'Else-stmt']],
-    'Else-stmt' : [['#jpf', 'endif'], ['else','#jpf_save', 'Statement', 'endif']],
+    'Else-stmt' : [['#jpf', 'endif'], ['else','#jpf_save', 'Statement','#jp', 'endif']],
     'Iteration-stmt' : [['repeat', '#save', 'Statement', 'until', '(', 'Expression', ')', '#jpf']],
     'Return-stmt' : [['return', 'Return-stmt-prime']],
     'Return-stmt-prime' : [[';'], ['Expression', ';']],

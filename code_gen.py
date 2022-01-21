@@ -30,8 +30,8 @@ def assign(param=None):
     update_temp([A1, R])
 
 def jump(param=None):
-    destination = SEMANTIC_STACK.pop()
-    PROGRAM_BLOCK.append(f"(JP, {destination}, , )")
+    address = SEMANTIC_STACK.pop()
+    PROGRAM_BLOCK[address] = (f"(JP, {destination}, , )")
 
 def jump_false(param=None):
     value = SEMANTIC_STACK.pop()
@@ -42,7 +42,7 @@ def jump_false_save(param=None):
     value = SEMANTIC_STACK.pop()
     address = SEMANTIC_STACK.pop()
     PROGRAM_BLOCK[address] = f"(JPF, {value}, {len(PROGRAM_BLOCK) + 1})"
-    SEMANTIC_STACK.append(len(PROGRAM_BLOCK))
+    save()
 
 def execute_operation(param=None):
     operand_2 = SEMANTIC_STACK.pop()
