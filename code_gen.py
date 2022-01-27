@@ -4,17 +4,11 @@ SEMANTIC_STACK=[]
 PROGRAM_BLOCK=['main_jump']
 LIVE_TEMPORARIES=[]
 
-SYMBOL_TABLE={"a": {
-    "address":500,
-    "size":1
-    }
-}
-
-operations_dict={ "+":"ADD", "-":"SUB", "*":"MULT", "=":"ASSIGN", "<":"LT", "==":"EQ"  }
+operations_dict={ "+":"ADD", "-":"SUB", "*":"MULT", "<":"LT", "==":"EQ"  }
 
 
 def pid(id):
-    SEMANTIC_STACK.append(SYMBOL_TABLE[id]["address"])
+    SEMANTIC_STACK.append(symbol_table.find_addr(id))
 
 def pnum(num):
     SEMANTIC_STACK.append(f"#{num}")
@@ -62,7 +56,7 @@ def declare_int(param=None):
     id = SEMANTIC_STACK.pop()
     symbol_table.SYMBOL_TABLE.append(symbol_table.Symbol(id, 'int'))
 
-def declare_arr(num):
+def declare_arr(num=0):
     id = SEMANTIC_STACK.pop()
     symbol_table.SYMBOL_TABLE.append(symbol_table.Symbol(id,'array', size= num))
 
@@ -74,6 +68,22 @@ def declare_func(param=None):
 
 def main_jump(param=None):
     PROGRAM_BLOCK[0] = f"(JP, {len(PROGRAM_BLOCK)}, , )"
+
+
+def set_index(param=None):
+    index = SEMANTIC_STACK.pop()
+    id = SEMANTIC_STACK.pop()
+    temp = get_temp()
+    PROGRAM_BLOCK.append(f"(MULT, #{index}, #4, {temp})")
+    PROGRAM_BLOCK.append(f"(ADD, {temp}, {id}, {temp})")
+    SEMANTIC_STACK.append(f"@{temp}")
+
+
+def set_arg_pointer(param=None):
+    SEMANTIC_STACK.append('_arg_pointer')
+
+def save_arg(param=None):
+    pass
 
 ACTION_SIGN={
     "#declare": declare,
@@ -88,7 +98,9 @@ ACTION_SIGN={
     "#jp": jump,
     "#jpf": jump_false,
     "#jpf_save": jump_false_save,
-    "#addop": addop
+    "#addop": addop,
+    "#set_arg_pointer": set_arg_pointer,
+    "#save_arg": save_arg
 }
 
 
@@ -97,7 +109,7 @@ def code_gen(action, token=None):
 
 
 def get_temp():
-    temp = 500
+    temp = 2000
     while temp in LIVE_TEMPORARIES:
         temp +=4
 
@@ -114,3 +126,4 @@ def write_output():
     with open('output.txt', 'w', encoding='utf-8') as output:
         for idx, line in enumerate(PROGRAM_BLOCK):
             output.write(f"{idx}\t{line}")
+

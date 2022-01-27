@@ -74,7 +74,7 @@ while True:
     current_state = state.get_value()
 
     if current_state[0]=="#":
-        code_gen.code_gen(current_state, token)
+        code_gen.code_gen(current_state, token.value)
         move_to_next_state()
         continue
 
@@ -83,7 +83,7 @@ while True:
         move_to_next_state()
 
 
-    if is_terminal(current_state):
+    elif is_terminal(current_state):
         if token.value == current_state or token.type == current_state:
             # matches. move both state and token
             if token.value == '$':
