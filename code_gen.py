@@ -82,9 +82,6 @@ def set_index(param=None):
 def set_arg_pointer(param=None):
     SEMANTIC_STACK.append('_arg_pointer')
 
-def save_arg(param=None):
-    pass
-
 ACTION_SIGN={
     "#declare": declare,
     '#declare_int':declare_int,
@@ -99,8 +96,9 @@ ACTION_SIGN={
     "#jpf": jump_false,
     "#jpf_save": jump_false_save,
     "#addop": addop,
+    "#set_index": set_index,
     "#set_arg_pointer": set_arg_pointer,
-    "#save_arg": save_arg
+    "#func_call": ''
 }
 
 

@@ -37,13 +37,13 @@ PRODUCTION = {
     'Term-zegond' : [['Factor-zegond', 'G']],
     'G' : [['#addop', '*', 'Factor', '#op_exec', 'G'], ['EPSILON']],
     'Factor' : [['(', 'Expression', ')'], ['#pid', 'ID', 'Var-call-prime'], ['#pnum', 'NUM']],
-    'Var-call-prime' : [['#set_arg_pointer', '(', 'Args', ')'], ['Var-prime']],
+    'Var-call-prime' : [['#set_arg_pointer', '(', 'Args', ')', '#call_func'], ['Var-prime']],
     'Var-prime' : [['[', 'Expression', '#set_index', ']'], ['EPSILON']],
     'Factor-prime' : [['#set_arg_pointer', '(', 'Args', ')'], ['EPSILON']],
     'Factor-zegond' : [['(', 'Expression', ')'], ['#pnum', 'NUM']],
     'Args' : [['Arg-list'], ['EPSILON']],
-    'Arg-list' : [['Expression', '#save_arg', 'Arg-list-prime']],
-    'Arg-list-prime' : [[',', 'Expression', '#save_arg', 'Arg-list-prime'], ['EPSILON']]
+    'Arg-list' : [['Expression', 'Arg-list-prime']],
+    'Arg-list-prime' : [[',', 'Expression', 'Arg-list-prime'], ['EPSILON']]
 }
 
 FIRST = {
