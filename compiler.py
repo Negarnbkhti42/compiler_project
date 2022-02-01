@@ -74,7 +74,7 @@ while True:
     current_state = state.get_value()
 
     if current_state[0]=="#":
-        code_gen.code_gen(current_state, token.value)
+        code_gen.code_gen(current_state, token)
         move_to_next_state()
         continue
 
