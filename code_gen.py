@@ -235,6 +235,7 @@ def func_call(param):
     global PROGRAM_BLOCK_INDEX
     global SEMANTIC_STACK
     global SEMANTIC_ERROR
+    global NUM_OF_ARGS
 
     if len(SEMANTIC_STACK) > 1 and SEMANTIC_STACK[-2] == 'print':
         add_to_pb(PROGRAM_BLOCK_INDEX, 'PRINT', SEMANTIC_STACK[-1])

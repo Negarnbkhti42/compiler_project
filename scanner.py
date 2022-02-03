@@ -6,59 +6,54 @@ class Token:
         self.value = value
         self.line = line
 
+
 LETTER = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 DIGIT = set("0123456789")
-KEYWORD = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return', 'endif']
+KEYWORD = ['if', 'else', 'void', 'int', 'repeat',
+           'break', 'until', 'return', 'endif']
 SYMBOL = [';', ':', ',', '[', ']', '{', '}', '(', ')', '+', '-', '*', '=', '<']
-COMMENT = ['/', '*', '//', '/*', '*/']
+COMMENT = ['/', '//', '/*', '*/']
 WHITESPACE = set(" \n\r\v\t\f")
 
 inputFile = 0
 
 line_num = 1
-pointer_position = 0
+last_read = ' '
+
 
 def openFile(input_file):
     global inputFile
     inputFile = open(input_file, 'r')
 
+
 def close_file():
     inputFile.close()
-    
+
+
 def get_char():
     ''' Reads one character from file, returns character and position '''
-    global pointer_position
+    global last_read
+    global line_num
 
-    pointer_position += 1
-    char = inputFile.read(1)
-    if char == '\n':
-        pointer_position += 1
-    return char
-
-
-def move_pointer(offset):
-    ''' returns back in file '''
-    global pointer_position
-
-    pointer_position += offset
-    inputFile.seek(pointer_position)
-    
+    last_read = inputFile.read(1)
+    if last_read == '\n':
+        line_num += 1
+    return last_read
 
 
 def skip_whitespace_and_comment():
     ''' for skipping unneeded whitespaces and comments '''
-    
+
     global line_num
+    global last_read
+
+    value = last_read
 
     while True:
-        value = get_char()
-        if value in WHITESPACE:
-            if value == '\n':
-                line_num += 1
 
-
-        elif value == COMMENT[0]:
-            value += get_char()
+        if value == COMMENT[0] or value == COMMENT[2] or value == COMMENT[3]:
+            if value == COMMENT[0]:
+                value += get_char()
 
             if value == '//':
                 value = get_char()
@@ -66,39 +61,31 @@ def skip_whitespace_and_comment():
                 while value != '\n' and value != '':
                     value = get_char()
 
-                if value == '\n':
-                    line_num += 1
             elif value == '/*':
                 start_line = line_num
                 input_char = get_char()
 
                 while input_char != '':
                     value += input_char
-                    if input_char == '\n':
-                        line_num += 1
-                    elif input_char == '*':
+                    if input_char == '*':
                         input_char = get_char()
 
                         if input_char == "/":
                             break
-                        elif input_char == '\n':
-                            value+= input_char
-                            line_num += 1
 
                     input_char = get_char()
                 if input_char == '':
                     return Token(False, 'Unclosed comment', value, start_line)
             else:
-                move_pointer(-1)
-                if value == '/\n':
-                    move_pointer(-1)
                 return Token(False, 'Invalid input', value[0], line_num)
-        else:
+        elif value not in WHITESPACE:
             return value
+        value = get_char()
 
 
 def get_id(value):
     ''' returns IDs and KEYWORDs '''
+    global last_read
 
     input_char = get_char()
     while input_char != '':
@@ -106,17 +93,16 @@ def get_id(value):
         if input_char in LETTER or input_char in DIGIT:
             value += input_char
         elif input_char in SYMBOL or input_char in WHITESPACE:
-            move_pointer(-1)
             return Token(True, 'KEYWORD' if value in KEYWORD else 'ID', value, line_num)
         elif input_char == COMMENT[0]:
             input_char += get_char()
 
             if input_char in COMMENT:
-                move_pointer(-2)
+                last_read = input_char
+
                 return Token(True, 'KEYWORD' if value in KEYWORD else 'ID', value, line_num)
             else:
                 value += input_char[0]
-                move_pointer(-1)
                 return Token(False, 'Invalid input', value, line_num)
         else:
             value += input_char
@@ -139,22 +125,20 @@ def get_num(value):
         value += input_char
         return Token(False, 'Invalid number', value, line_num)
 
-    if input_char != '':
-        move_pointer(-1)
     return Token(True, 'NUM', value, line_num)
 
 
 def get_symbol(value):
     ''' returns SYMBOLs '''
 
-    if value=="=":
+    if value == "=":
         input_char = get_char()
 
         if input_char == "=":
             value += input_char
+            get_char()
             return Token(True, 'SYMBOL', value, line_num)  # ==
         if input_char in LETTER or input_char in DIGIT or input_char in WHITESPACE or input_char in COMMENT:
-            move_pointer(-1)
             return Token(True, 'SYMBOL', value, line_num)  # =
         value += input_char
         return Token(False, 'Invalid input', value, line_num)
@@ -163,15 +147,17 @@ def get_symbol(value):
 
         if input_char == '/':
             value += input_char
+            get_char()
             return Token(False, 'Unmatched comment', value, line_num)
         elif input_char in LETTER or input_char in DIGIT or input_char in WHITESPACE:
-            move_pointer(-1)
             return Token(True, 'SYMBOL', value, line_num)
         else:
             value += input_char
             return Token(False, 'Invalid input', value, line_num)
     else:
-        return Token(True, 'SYMBOL', value, line_num)  # harchizi joz   ==  va  =
+        # harchizi joz   ==  va  =
+        get_char()
+        return Token(True, 'SYMBOL', value, line_num)
 
 
 def get_new_token():
@@ -200,6 +186,7 @@ def get_new_token():
         return get_symbol(value)
 
     return Token(False, 'Invalid input', value, line_num)
+
 
 def get_next_token():
     while True:
