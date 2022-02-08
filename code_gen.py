@@ -6,7 +6,7 @@ SEMANTIC_ERROR = []
 RETURN_LIST = []
 BREAK_LIST = []
 PROGRAM_BLOCK_INDEX = 0
-TEMPORARY = 2000
+TEMPORARY = 500
 
 NUM_OF_ARGS = 0
 
@@ -28,14 +28,25 @@ def declare_int(param=None):
     symbol_table.SYMBOL_TABLE.append(symbol_table.Symbol(id, 'int', addr))
 
 
-def declare_arr(param=0):
-    size = SEMANTIC_STACK.pop()[1:]
+def declare_arr_arg(param=None):
     id = SEMANTIC_STACK.pop()
     type = SEMANTIC_STACK.pop()
     addr = get_temp()
-    length = get_temp(int(size))
-    symbol_table.SYMBOL_TABLE.append(
-        symbol_table.Symbol(id, 'array', addr, attr=size))
+    symbol_table.SYMBOL_TABLE.append(symbol_table.Symbol(id, 'array', addr))
+
+
+def declare_arr(param=0):
+    global PROGRAM_BLOCK_INDEX
+
+    size = SEMANTIC_STACK.pop()[1:]
+    id = SEMANTIC_STACK.pop()
+    type = SEMANTIC_STACK.pop()
+
+    temp = get_temp()
+    arr = get_temp(int(size))
+    add_to_pb(PROGRAM_BLOCK_INDEX, "ASSIGN", f"#{arr}", temp)
+    PROGRAM_BLOCK_INDEX += 1
+    symbol_table.SYMBOL_TABLE.append(symbol_table.Symbol(id, type, temp))
 
 
 def func_id(param=None):
@@ -45,8 +56,13 @@ def func_id(param=None):
     id = SEMANTIC_STACK.pop()
     SEMANTIC_STACK.append(PROGRAM_BLOCK_INDEX)
     SEMANTIC_STACK.append(id)
-    PROGRAM_BLOCK_INDEX += 1
+    if id != 'main':
+        PROGRAM_BLOCK_INDEX += 1
     symbol_table.SYMBOL_TABLE.append("func_start")
+
+
+def params_declared(param=None):
+    symbol_table.SYMBOL_TABLE.append("param_declare")
 
 
 def label(param=None):
@@ -87,6 +103,12 @@ def declare_func(param=None):
     attr = []
     attr_type = []
     symbol = symbol_table.SYMBOL_TABLE.pop()
+
+    while symbol != 'param_declare':
+        symbol = symbol_table.SYMBOL_TABLE.pop()
+
+    symbol = symbol_table.SYMBOL_TABLE.pop()
+
     while symbol != 'func_start':
         attr.append(symbol.address)
         attr_type.append(symbol.type)
@@ -96,10 +118,13 @@ def declare_func(param=None):
     attr.append(SEMANTIC_STACK[-2])
     attr.append(SEMANTIC_STACK[-1])
     symbol_table.SYMBOL_TABLE.append(symbol_table.Symbol(
-        SEMANTIC_STACK[-4], 'func', attr, attr=attr))
+        SEMANTIC_STACK[-4], 'func', attr, attr=attr_type))
     for i in range(4):
         SEMANTIC_STACK.pop()
-    # TODO: handle main
+
+    if symbol_table.SYMBOL_TABLE[-1].id != 'main':
+        add_to_pb(SEMANTIC_STACK.pop(), 'JP', PROGRAM_BLOCK_INDEX)
+    SEMANTIC_STACK.pop()
 
 
 def add_id(id):
@@ -107,8 +132,13 @@ def add_id(id):
 
 
 def pid(id):
-    SEMANTIC_STACK.append('print' if id.value ==
-                          'output' else symbol_table.find_addr(id.value))
+    symbol = 'print' if id.value == 'output' else symbol_table.find_addr(
+        id.value)
+    if symbol:
+        SEMANTIC_STACK.append(symbol)
+    else:
+        SEMANTIC_ERROR.append(
+            f"#{id.line}: Semantic Error! '{id.value}' is not defined")
 
 
 def save(param=None):
@@ -118,18 +148,28 @@ def save(param=None):
     PROGRAM_BLOCK_INDEX += 1
 
 
+def save_iter(param=None):
+    SEMANTIC_STACK.append(PROGRAM_BLOCK_INDEX)
+
+
 def assign(param=None):
     global PROGRAM_BLOCK_INDEX
+    global SEMANTIC_STACK
 
     A1 = SEMANTIC_STACK.pop()
     R = SEMANTIC_STACK.pop()
+    SEMANTIC_STACK.append(R)
     add_to_pb(PROGRAM_BLOCK_INDEX, 'ASSIGN', A1, r=R)
     PROGRAM_BLOCK_INDEX += 1
 
 
+def pop(param=None):
+    SEMANTIC_STACK.pop()
+
+
 def jump(param=None):
     address = SEMANTIC_STACK.pop()
-    add_to_pb(address, 'JP', len(PROGRAM_BLOCK))
+    add_to_pb(address, 'JP', PROGRAM_BLOCK_INDEX)
 
 
 def jump_false(param=None):
@@ -142,7 +182,7 @@ def jump_false(param=None):
 
 def jump_false_iter(param=None):
     global PROGRAM_BLOCK_INDEX
-    # TODO: return later
+
     value = SEMANTIC_STACK.pop()
     address = SEMANTIC_STACK.pop()
     add_to_pb(PROGRAM_BLOCK_INDEX, 'JPF', value, op2=address)
@@ -150,6 +190,7 @@ def jump_false_iter(param=None):
 
 
 def jump_false_save(param=None):
+    global PROGRAM_BLOCK_INDEX
     address = SEMANTIC_STACK.pop()
     value = SEMANTIC_STACK.pop()
     add_to_pb(address, 'JPF', value, op2=PROGRAM_BLOCK_INDEX + 1)
@@ -179,10 +220,13 @@ def set_index(param=None):
     index = SEMANTIC_STACK.pop()
     id = SEMANTIC_STACK.pop()
     temp = get_temp()
+    temp2 = get_temp()
 
     add_to_pb(PROGRAM_BLOCK_INDEX, 'MULT', f"{index}", "#4", f"{temp}")
     PROGRAM_BLOCK_INDEX += 1
-    add_to_pb(PROGRAM_BLOCK_INDEX, 'ADD', temp, f"#{id}", temp)
+    add_to_pb(PROGRAM_BLOCK_INDEX, 'ASSIGN', f"@{id}", temp2)
+    PROGRAM_BLOCK_INDEX += 1
+    add_to_pb(PROGRAM_BLOCK_INDEX, 'ADD', temp, temp2, temp)
     PROGRAM_BLOCK_INDEX += 1
     SEMANTIC_STACK.append(f"@{temp}")
 
@@ -238,9 +282,8 @@ def func_call(param):
     global NUM_OF_ARGS
 
     if len(SEMANTIC_STACK) > 1 and SEMANTIC_STACK[-2] == 'print':
-        add_to_pb(PROGRAM_BLOCK_INDEX, 'PRINT', SEMANTIC_STACK[-1])
-        for _ in range(2):
-            SEMANTIC_STACK.pop()
+        addr = SEMANTIC_STACK.pop()
+        add_to_pb(PROGRAM_BLOCK_INDEX, 'PRINT', addr)
 
         PROGRAM_BLOCK_INDEX += 1
         NUM_OF_ARGS = 0
@@ -253,6 +296,11 @@ def func_call(param):
         if isinstance(symbol, list):
             funcionArgs = symbol
             break
+    else:
+        return
+
+    if funcionArgs == []:
+        return
 
     originalArgLen = len(funcionArgs) - 3
     func = symbol_table.getSymbol(funcionArgs)
@@ -262,23 +310,38 @@ def func_call(param):
             f"#{param.line}: semantic error! Mismatch in numbers of arguments of '{func.id}'")
         for i in range(NUM_OF_ARGS):
             SEMANTIC_STACK.pop()
+        NUM_OF_ARGS = 0
         return
 
-    for i in range(NUM_OF_ARGS):
+    for i in range(originalArgLen):
         formal_arg = SEMANTIC_STACK[argLen - NUM_OF_ARGS + i]
         original_arg = funcionArgs[i + 1]
 
-        formal_arg_type = symbol_table.getSymbol(formal_arg).type
+        formal_arg_type = 'int' if isinstance(
+            formal_arg, str) else symbol_table.getSymbol(formal_arg).type
         original_arg_type = func.attr[i]
 
-    if formal_arg_type != original_arg_type:
-        SEMANTIC_ERROR.append(
-            f"#{param.line}: Semantic Error! Mismatch in type of argument {i+1} for '{func.id}'. Expected '{original_arg_type}' but got '{formal_arg_type}' instead")
-    add_to_pb(PROGRAM_BLOCK_INDEX, 'ASSIGN', formal_arg, r=original_arg)
+        if formal_arg_type != original_arg_type:
+            SEMANTIC_ERROR.append(
+                f"#{param.line}: Semantic Error! Mismatch in type of argument {i+1} for '{func.id}'. Expected '{original_arg_type}' but got '{formal_arg_type}' instead")
+        add_to_pb(PROGRAM_BLOCK_INDEX, 'ASSIGN', formal_arg, r=original_arg)
+        PROGRAM_BLOCK_INDEX += 1
+
+    add_to_pb(PROGRAM_BLOCK_INDEX, 'ASSIGN',
+              f"#{PROGRAM_BLOCK_INDEX + 2}", funcionArgs[originalArgLen + 1])
+    PROGRAM_BLOCK_INDEX += 1
+    add_to_pb(PROGRAM_BLOCK_INDEX, 'JP', funcionArgs[0] + 1)
     PROGRAM_BLOCK_INDEX += 1
 
-    for i in range(NUM_OF_ARGS+1):
+    for i in range(NUM_OF_ARGS + 1):
         SEMANTIC_STACK.pop()
+
+    addr = get_temp()
+    SEMANTIC_STACK.append(addr)
+    add_to_pb(PROGRAM_BLOCK_INDEX, 'ASSIGN',
+              funcionArgs[originalArgLen + 2], addr)
+    PROGRAM_BLOCK_INDEX += 1
+
     NUM_OF_ARGS = 0
 
 
@@ -286,8 +349,10 @@ ACTION_SIGN = {
     "#add_type": add_type,
     "#add_id": add_id,
     '#declare_int': declare_int,
+    "#declare_arr_arg": declare_arr_arg,
     '#declare_arr': declare_arr,
     '#func_id': func_id,
+    "#params_declared": params_declared,
     "#label": label,
     "#set_func_temps": set_func_temps,
     "#start_func": start_func,
@@ -297,7 +362,9 @@ ACTION_SIGN = {
     "#pid": pid,
     "#pnum": pnum,
     "#save": save,
+    "#save_iter": save_iter,
     "#assign": assign,
+    "#pop": pop,
     "#op_exec": execute_operation,
     "#jp": jump,
     "#jpf": jump_false,
@@ -321,8 +388,14 @@ def code_gen(action, token=None):
 
 def get_temp(size=1):
     global TEMPORARY
+    global PROGRAM_BLOCK_INDEX
+
     addr = TEMPORARY
-    TEMPORARY += 4*size
+    for i in range(size):
+        add_to_pb(PROGRAM_BLOCK_INDEX, 'ASSIGN', '#0', TEMPORARY)
+        TEMPORARY += 4
+        PROGRAM_BLOCK_INDEX += 1
+    # TEMPORARY += 4 * size
     return addr
 
 
@@ -334,6 +407,15 @@ def add_to_pb(index, action, op1, op2='', r=''):
 
 
 def write_output():
-    with open('output.txt', 'w', encoding='utf-8') as output:
+    with open('output.txt', 'w+', encoding='utf-8') as output:
         for idx, line in enumerate(PROGRAM_BLOCK):
             output.write(f"{idx}\t{line}\n")
+
+
+def write_semantic_errors():
+    with open('semantic_errors.txt', 'w', encoding='utf-8') as errors:
+        if SEMANTIC_ERROR:
+            for error in SEMANTIC_ERROR:
+                errors.write(f"{error}\n")
+        else:
+            errors.write("The input program is semantically correct.")

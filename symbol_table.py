@@ -16,6 +16,7 @@ def find_addr(id):
             continue
         if symbol.id == id:
             return symbol.address
+    return None
 
 
 def getSymbol(addr):

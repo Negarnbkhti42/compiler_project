@@ -35,9 +35,9 @@ def get_char():
     global last_read
     global line_num
 
-    last_read = inputFile.read(1)
     if last_read == '\n':
         line_num += 1
+    last_read = inputFile.read(1)
     return last_read
 
 
